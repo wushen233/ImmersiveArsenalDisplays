@@ -3,7 +3,7 @@
 
 [size=4]A native Fallout 4 equipment display system for weapons, armor, ammunition, and more.[/size]
 
-[i]English first / English 在前，中文在下[/i]
+[i]English first | 中文在下[/i]
 [/center]
 
 [h1]English[/h1]
@@ -53,8 +53,7 @@ The archive uses the normal Fallout 4 Data layout:
 [code]
 Data/F4SE/Plugins/ImmersiveArsenalDisplays.dll
 Data/F4SE/Plugins/ImmersiveArsenalDisplays/
-Data/Scripts/IAD_Native.pex
-[/code]
+Data/Scripts/IAD_Native.pex[/code]
 
 IAD does not include an ESP/ESM plugin.
 
@@ -65,8 +64,7 @@ The main configuration files are stored in:
 [code]
 Data/F4SE/Plugins/ImmersiveArsenalDisplays/ActiveConfig.json
 Data/F4SE/Plugins/ImmersiveArsenalDisplays/IAD_Settings.json
-Data/F4SE/Plugins/ImmersiveArsenalDisplays/ImmersiveArsenalDisplays.ini
-[/code]
+Data/F4SE/Plugins/ImmersiveArsenalDisplays/ImmersiveArsenalDisplays.ini[/code]
 
 Use the in-game editor for normal configuration. If no active configuration exists, IAD creates one from its default configuration. Exported snapshots and Form-filter profiles can be backed up independently.
 
@@ -134,7 +132,7 @@ When reporting a problem, please include:
 
 [h2]模组概述[/h2]
 
-Immersive Arsenal Displays（IAD）是一个原生 Fallout 4 的装备展示系统。它可以将武器、护甲、弹药和其他装备按照自定义插槽、动态节点、模型变换、条件和转换设置显示在角色身上，并提供游戏内 Dear ImGui 配置编辑器。
+Immersive Arsenal Displays（IAD）是一个原生 Fallout 4 的装备展示系统。它可以将武器、护甲、弹药和其他装备按照自定义插槽、动态节点、模型变换、条件和显示规则显示在角色身上，并提供游戏内 Dear ImGui 配置编辑器。
 
 IAD 仅负责展示，不会替换游戏装备、修改物品库存、添加武器或护甲，也不需要 ESP/ESM 插件。
 
@@ -177,8 +175,7 @@ IAD 仅负责展示，不会替换游戏装备、修改物品库存、添加武�
 [code]
 Data/F4SE/Plugins/ImmersiveArsenalDisplays.dll
 Data/F4SE/Plugins/ImmersiveArsenalDisplays/
-Data/Scripts/IAD_Native.pex
-[/code]
+Data/Scripts/IAD_Native.pex[/code]
 
 IAD 不包含 ESP/ESM 插件。
 
@@ -189,8 +186,7 @@ IAD 不包含 ESP/ESM 插件。
 [code]
 Data/F4SE/Plugins/ImmersiveArsenalDisplays/ActiveConfig.json
 Data/F4SE/Plugins/ImmersiveArsenalDisplays/IAD_Settings.json
-Data/F4SE/Plugins/ImmersiveArsenalDisplays/ImmersiveArsenalDisplays.ini
-[/code]
+Data/F4SE/Plugins/ImmersiveArsenalDisplays/ImmersiveArsenalDisplays.ini[/code]
 
 日常配置请使用游戏内编辑器。如果没有活动配置，IAD 会根据默认配置创建。导出的快照和 Form 过滤配置可以单独备份。
 
@@ -223,13 +219,13 @@ IAD 源码地址：
 [list]
 [*][b]Fallout 4[/b] 与 [b]Bethesda Game Studios[/b]。
 [*][b]F4SE[/b] 团队：[url=https://f4se.silverlock.org/]f4se.silverlock.org[/url]。
-[*][b]CommonLibF4[/b] 及其贡献者：[url=https://github.com/Dear-Modding-FO4/commonlibf4]Dear-Modding-FO4/commonlibf4[/url]、[url=https://github.com/wushen233/commonlibf4]wushen233/commonlibf4[/url]以及上游项目。
+[*][b]CommonLibF4[/b] 及其贡献者：[url=https://github.com/Dear-Modding-FO4/commonlibf4]Dear-Modding-FO4/commonlibf4[/url]、[url=https://github.com/wushen233/commonlibf4]wushen233/commonlibf4[/url] 以及上游项目。
 [*][b]Dear ImGui[/b]：[url=https://github.com/ocornut/imgui]github.com/ocornut/imgui[/url]。
 [*][b]Microsoft Detours[/b]：[url=https://github.com/microsoft/Detours]github.com/microsoft/Detours[/url]。
 [*][b]SimpleIni[/b]：[url=https://github.com/brofield/simpleini]github.com/brofield/simpleini[/url]。
 [*][b]JSON for Modern C++[/b]：[url=https://github.com/nlohmann/json]github.com/nlohmann/json[/url]。
-[*][b]Immersive Equipment Displays[/b]：由 SlavicPotato 开发：[url=https://github.com/SlavicPotato/ied-dev]github.com/SlavicPotato/ied-dev[/url]。IAD 将 IED 作为行为、配置和 UI 设计参考，与 IED 无从属关系。
-[*][b]社区测试者和 Beta 测试者[/b]，感谢各位对装备切换、拔收武器、死亡、读档和回归测试提供帮助。核心测试者名单不在此逐一列出。
+[*][b]Immersive Equipment Displays[/b]：由 SlavicPotato 开发：[url=https://github.com/SlavicPotato/ied-dev]github.com/SlavicPotato/ied-dev[/url]。IAD 将 IED 作为行为、配置和 UI 设计参考，是独立的 Fallout 4 实现，与 IED 没有隶属或关联关系。
+[*][b]社区测试者和 Beta 测试者[/b]，感谢各位对装备切换、拔枪/收枪、死亡、读档和回归测试提供帮助。个人姓名未在此逐一列出。
 [/list]
 
 [h2]许可证[/h2]
