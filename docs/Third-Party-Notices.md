@@ -51,5 +51,5 @@ reports. Individual names are intentionally omitted.
 
 ## Project License
 
-IAD source code is released under the GNU GPL v3.0 or later. The complete license text is
+IAD source code is released under the GNU GPL v3.0. The complete license text is
 provided in the repository root as `LICENSE`.

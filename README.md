@@ -57,7 +57,7 @@ archive is maintained separately from this source repository.
 
 ## License
 
-IAD source code is released under the GNU GPL v3.0 or later. See `LICENSE` and
+IAD source code is released under the GNU GPL v3.0. See `LICENSE` and
 `docs/Third-Party-Notices.md` for the project and dependency licensing details.
 
 ## Author

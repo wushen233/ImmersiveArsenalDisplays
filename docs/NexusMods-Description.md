@@ -101,7 +101,7 @@ The source code is available on GitHub:
 
 [h1]License[/h1]
 
-IAD source code is released under the [b]GNU GPL v3.0 or later[/b]. Third-party libraries and reference projects retain their own licenses. See the GitHub repository for the complete license and third-party notices.
+IAD source code is released under the [b]GNU GPL v3.0[/b]. Third-party libraries and reference projects retain their own licenses. See the GitHub repository for the complete license and third-party notices.
 
 [h1]Support and Bug Reports[/h1]
 
