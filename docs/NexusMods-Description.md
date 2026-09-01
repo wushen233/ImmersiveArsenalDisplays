@@ -6,15 +6,15 @@
 [i]English first | 中文在下[/i]
 [/center]
 
-[h1]English[/h1]
+[size=5][b]English[/b][/size]
 
-[h2]Overview[/h2]
+[size=4][b]Overview[/b][/size]
 
 Immersive Arsenal Displays (IAD) adds configurable, in-world equipment displays to Fallout 4. Display weapons and other equipment on your character and high-process NPCs using custom slots, dynamic nodes, model transforms, conditions, and an in-game Dear ImGui editor.
 
 IAD is display-only. It does not replace gameplay equipment, change inventories, add weapons or armor, or require an ESP/ESM plugin.
 
-[h2]Features[/h2]
+[size=4][b]Features[/b][/size]
 
 [list]
 [*]Display weapons, melee weapons, armor, ammunition, chems, food, and miscellaneous items.
@@ -30,7 +30,7 @@ IAD is display-only. It does not replace gameplay equipment, change inventories,
 [*]In-game ImGui configuration editor with import/export support for global snapshots and Form-filter profiles.
 [/list]
 
-[h2]Requirements[/h2]
+[size=4][b]Requirements[/b][/size]
 
 [list]
 [*]Fallout 4 runtime 1.10.163 through 1.11.221 via multi-runtime CommonLibF4 builds. Currently verified in testing on 1.10.163 and 1.11.221.
@@ -39,7 +39,7 @@ IAD is display-only. It does not replace gameplay equipment, change inventories,
 [*]x64 Microsoft Visual C++ runtime.
 [/list]
 
-[h2]Installation[/h2]
+[size=4][b]Installation[/b][/size]
 
 [list=1]
 [*]Install Fallout 4, F4SE, and Address Library for your runtime.
@@ -57,7 +57,7 @@ Data/Scripts/IAD_Native.pex[/code]
 
 IAD does not include an ESP/ESM plugin.
 
-[h2]Configuration[/h2]
+[size=4][b]Configuration[/b][/size]
 
 The main configuration files are stored in:
 
@@ -70,11 +70,11 @@ Use the in-game editor for normal configuration. If no active configuration exis
 
 Custom model and holster paths must point to files that exist in your Fallout 4 Data installation. IAD does not ship the test-only [b]10mm_R_thigh_f.nif[/b] holster mesh used during development.
 
-[h2]Papyrus API[/h2]
+[size=4][b]Papyrus API[/b][/size]
 
 The optional [b]IAD_Native[/b] Papyrus interface allows Quest and scene scripts to control runtime variables, model paths, target Forms, and display refreshes. See the source repository documentation for the API reference.
 
-[h2]Compatibility and Limitations[/h2]
+[size=4][b]Compatibility and Limitations[/b][/size]
 
 [list]
 [*]IAD is a native F4SE plugin and must be used with a compatible Fallout 4 runtime and F4SE build.
@@ -84,7 +84,7 @@ The optional [b]IAD_Native[/b] Papyrus interface allows Quest and scene scripts 
 [*]Immersive Equipment Displays (IED) is a design and behavior reference for IAD. IAD is an independent Fallout 4 implementation and does not include IED source files or runtime assets.
 [/list]
 
-[h2]Source Code[/h2]
+[size=4][b]Source Code[/b][/size]
 
 The IAD source code is available here:
 
@@ -92,7 +92,7 @@ The IAD source code is available here:
 
 The published source includes the C++ source, Papyrus source, xmake build file, architecture notes, API documentation, and third-party notices. Runtime binaries and personal development configurations are not included in the source repository.
 
-[h2]Credits and Acknowledgements[/h2]
+[size=4][b]Credits and Acknowledgements[/b][/size]
 
 [list]
 [*][b]Fallout 4[/b] and [b]Bethesda Game Studios[/b] for the game, its runtime, and its asset ecosystem.
@@ -106,15 +106,15 @@ The published source includes the C++ source, Papyrus source, xmake build file, 
 [*][b]Community testers and beta testers[/b] for repeated gameplay, equipment-transition, death, save/load, and regression testing. Individual names are intentionally omitted.
 [/list]
 
-[h2]License[/h2]
+[size=4][b]License[/b][/size]
 
 IAD source code is released under the [b]GNU GPL v3.0[/b]. Third-party libraries and reference projects retain their own licenses. The runtime archive includes the license and third-party notices.
 
-[h2]Author[/h2]
+[size=4][b]Author[/b][/size]
 
 [url=https://www.nexusmods.com/profile/Hwushen]Hwushen on Nexus Mods[/url] | [url=https://github.com/wushen233]wushen233 on GitHub[/url]
 
-[h2]Support and Bug Reports[/h2]
+[size=4][b]Support and Bug Reports[/b][/size]
 
 When reporting a problem, please include:
 
@@ -128,15 +128,15 @@ When reporting a problem, please include:
 
 [hr]
 
-[h1]中文说明[/h1]
+[size=5][b]中文说明[/b][/size]
 
-[h2]模组概述[/h2]
+[size=4][b]模组概述[/b][/size]
 
 Immersive Arsenal Displays（IAD）是一个原生 Fallout 4 的装备展示系统。它可以将武器、护甲、弹药和其他装备按照自定义插槽、动态节点、模型变换、条件和显示规则显示在角色身上，并提供游戏内 Dear ImGui 配置编辑器。
 
 IAD 仅负责展示，不会替换游戏装备、修改物品库存、添加武器或护甲，也不需要 ESP/ESM 插件。
 
-[h2]主要功能[/h2]
+[size=4][b]主要功能[/b][/size]
 
 [list]
 [*]支持手枪、步枪、近战武器、护甲、弹药、药品、食物和其他物品的展示。
@@ -152,7 +152,7 @@ IAD 仅负责展示，不会替换游戏装备、修改物品库存、添加武�
 [*]提供游戏内 ImGui 配置编辑器，支持全局快照和 Form 过滤配置导入/导出。
 [/list]
 
-[h2]环境要求[/h2]
+[size=4][b]环境要求[/b][/size]
 
 [list]
 [*]通过多版本 CommonLibF4 构建，理论支持 Fallout 4 1.10.163 至 1.11.221 运行时。目前已实际测试 1.10.163 和 1.11.221。
@@ -161,7 +161,7 @@ IAD 仅负责展示，不会替换游戏装备、修改物品库存、添加武�
 [*]x64 Microsoft Visual C++ 运行库。
 [/list]
 
-[h2]安装方法[/h2]
+[size=4][b]安装方法[/b][/size]
 
 [list=1]
 [*]先安装与游戏运行时匹配的 Fallout 4、F4SE 和 Address Library。
@@ -179,7 +179,7 @@ Data/Scripts/IAD_Native.pex[/code]
 
 IAD 不包含 ESP/ESM 插件。
 
-[h2]配置文件[/h2]
+[size=4][b]配置文件[/b][/size]
 
 主要配置文件位于：
 
@@ -192,11 +192,11 @@ Data/F4SE/Plugins/ImmersiveArsenalDisplays/ImmersiveArsenalDisplays.ini[/code]
 
 自定义模型和枪套路径必须指向 Fallout 4 Data 目录中实际存在的文件。本模组不包含开发测试使用的 [b]10mm_R_thigh_f.nif[/b] 枪套模型。
 
-[h2]Papyrus 接口[/h2]
+[size=4][b]Papyrus 接口[/b][/size]
 
 可选的 [b]IAD_Native[/b] Papyrus 接口可供 Quest 和场景脚本控制运行时变量、模型路径、目标 Form 和展示刷新。详细接口参数请参考源码仓库中的文档。
 
-[h2]兼容性与限制[/h2]
+[size=4][b]兼容性与限制[/b][/size]
 
 [list]
 [*]IAD 是原生 F4SE 插件，必须使用与游戏运行时和 F4SE 匹配的版本。
@@ -206,7 +206,7 @@ Data/F4SE/Plugins/ImmersiveArsenalDisplays/ImmersiveArsenalDisplays.ini[/code]
 [*]Immersive Equipment Displays（IED）是 IAD 学习的行为和配置参考。IAD 是独立的 Fallout 4 实现，不包含 IED 源码或运行时资产。
 [/list]
 
-[h2]源码[/h2]
+[size=4][b]源码[/b][/size]
 
 IAD 源码地址：
 
@@ -214,7 +214,7 @@ IAD 源码地址：
 
 公开源码包含 C++ 源码、Papyrus 源码、xmake 构建文件、架构说明、API 文档和第三方鸣谢。运行时二进制文件和个人开发配置不包含在源码仓库中。
 
-[h2]鸣谢[/h2]
+[size=4][b]鸣谢[/b][/size]
 
 [list]
 [*][b]Fallout 4[/b] 与 [b]Bethesda Game Studios[/b]。
@@ -228,15 +228,15 @@ IAD 源码地址：
 [*][b]社区测试者和 Beta 测试者[/b]，感谢各位对装备切换、拔枪/收枪、死亡、读档和回归测试提供帮助。个人姓名未在此逐一列出。
 [/list]
 
-[h2]许可证[/h2]
+[size=4][b]许可证[/b][/size]
 
 IAD 源码使用 [b]GNU GPL v3.0[/b] 发布。第三方库和参考项目使用各自的许可证。运行时压缩包中包含许可证和第三方鸣谢文件。
 
-[h2]作者[/h2]
+[size=4][b]作者[/b][/size]
 
 [url=https://www.nexusmods.com/profile/Hwushen]Hwushen 的 Nexus Mods 资料页[/url] | [url=https://github.com/wushen233]wushen233 的 GitHub 资料页[/url]
 
-[h2]问题反馈[/h2]
+[size=4][b]问题反馈[/b][/size]
 
 反馈问题时请尽量提供：
 
