@@ -33,7 +33,7 @@ IAD is display-only. It does not replace gameplay equipment, change inventories,
 [h2]Requirements[/h2]
 
 [list]
-[*]Fallout 4, currently targeting runtime 1.11.221.
+[*]Fallout 4 runtime 1.10.163 through 1.11.221 via multi-runtime CommonLibF4 builds. Currently verified in testing on 1.10.163 and 1.11.221.
 [*]Fallout 4 Script Extender (F4SE), matching your Fallout 4 runtime.
 [*]Address Library for F4SE Plugins, matching your Fallout 4 runtime.
 [*]x64 Microsoft Visual C++ runtime.
@@ -155,7 +155,7 @@ IAD 仅负责展示，不会替换游戏装备、修改物品库存、添加武�
 [h2]环境要求[/h2]
 
 [list]
-[*]Fallout 4，当前构建目标为 1.11.221 运行时。
+[*]通过多版本 CommonLibF4 构建，理论支持 Fallout 4 1.10.163 至 1.11.221 运行时。目前已实际测试 1.10.163 和 1.11.221。
 [*]与 Fallout 4 运行时匹配的 F4SE。
 [*]与 Fallout 4 运行时匹配的 Address Library for F4SE Plugins。
 [*]x64 Microsoft Visual C++ 运行库。
