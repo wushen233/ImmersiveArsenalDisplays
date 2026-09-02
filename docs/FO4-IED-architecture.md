@@ -45,7 +45,7 @@ When multiple Last Equipped Custom rules can claim the same display slot, IAD re
 - When NPC displays are disabled, IAD culls both current and deferred-retirement NPC models once, resets their IAD physics state, and skips subsequent active-effect polling, inventory evaluation, node work, and transform updates. Re-enabling queues a consolidated refresh for the active NPC set.
 - The transform pass never creates actor caches. Actors without an existing IAD node or display-slot state return before scene lookup, physics, or transform work; evaluation remains the only path that creates actor display state.
 - Active actor collection uses FormID identity and preserves player-first ordering, so duplicate process-list handles cannot run IAD state, transform, or physics work twice in one update tick.
-- The asynchronous model queue intentionally consumes one FIFO request per update tick. Every request carries a scene generation, and stale-generation requests are discarded before model assembly; attachment callbacks perform further actor, slot, item UID, and request-signature validation.
+- The asynchronous model queue consumes one request per update tick. The newest player-owned request is selected ahead of stale player entries so weapon switches are not delayed by obsolete scans; NPC and unowned requests retain FIFO order when no player request is pending. Every request carries a scene generation, and stale-generation requests are discarded before model assembly; attachment callbacks perform further actor, slot, item UID, and request-signature validation.
 - `RuntimeSelection` values are reset to their documented defaults before `ActiveConfig.json` is parsed. A missing field in a migrated or manually reduced configuration therefore cannot retain a previous reload's in-memory state. INI-owned editor and global equipment-mode values remain outside that reset boundary.
 - Slot form filters support IED-style named profile references. `UseProfile: true` resolves `ProfileName` at candidate-evaluation time, so editing and saving the named form-filter profile updates every linked slot. A missing or malformed profile fails that slot's form-filter check instead of broadening its candidate set. Existing inline filters remain the default and profile Apply/Merge still copies data for a self-contained slot.
 - Direct in-game loads increment the scene generation at `kPreLoadGame`. After the replacement player 3D is fully loaded, IAD clears all tracked display state with scene detachment enabled, clears the node cache, and evaluates the rebuilt skeleton on the following update. Main-menu teardown remains a separate path where the old actor tree is already owned by the engine and only non-owning state is reset.
@@ -66,7 +66,7 @@ The intended FO4 equivalent of IED's processor phases is:
 
 | Stage | Frequency | Work |
 |---|---|---|
-| High | Per update tick | Consume queued equip/container events, process player state, attach completed model tasks. Player selection requests are coalesced for 8 ticks. |
+| High | Per update tick | Consume queued equip/container events, process player state, and attach completed model tasks. The newest player model request takes priority over stale queued player work. |
 | Medium | Every 4 update ticks | Evaluate one nearby NPC inventory and slot assignment round-robin. |
 | Low | Infrequent | Retire inactive actor state, clear stale caches, refresh global conditions. |
 

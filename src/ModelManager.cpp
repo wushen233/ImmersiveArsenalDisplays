@@ -457,7 +457,7 @@ namespace IAD {
 		std::lock_guard<std::mutex> lock(_queueMutex);
 		while (!_asyncLoadQueue.empty()) {
 			auto req = _asyncLoadQueue.front();
-			_asyncLoadQueue.pop();
+			_asyncLoadQueue.pop_front();
 			if (req.tempRef) {
 				if (req.originalExtra) req.tempRef->extraList = req.originalExtra;
 				else req.tempRef->extraList = nullptr;
@@ -485,7 +485,7 @@ namespace IAD {
 
 		std::lock_guard<std::mutex> lock(_queueMutex);
 		const auto discardedRequests = _asyncLoadQueue.size();
-		std::queue<AsyncModelRequest> empty;
+		std::deque<AsyncModelRequest> empty;
 		_asyncLoadQueue.swap(empty);
 		REX::INFO("[IAD Lifecycle] MainMenu teardown completed on game thread; discarded {} pending model requests", discardedRequests);
 	}
@@ -540,6 +540,7 @@ namespace IAD {
 		req.tempRef = tempRef;
 		req.originalExtra = originalExtra;
 		req.customExtra = payloadExtra;
+		req.actorFormID = a_actor->GetFormID();
 		req.isMagazineExtraction = false;
 		req.loadFirstPersonModel = a_loadFirstPersonModel && a_item.object->As<RE::TESObjectWEAP>() != nullptr;
 		req.cleanupPolicy = a_cleanupPolicy;
@@ -548,7 +549,7 @@ namespace IAD {
 		req.callback = a_callback;
 
 		std::lock_guard<std::mutex> lock(_queueMutex);
-		_asyncLoadQueue.push(req);
+		_asyncLoadQueue.push_back(std::move(req));
 	}
 
 	void ModelManager::RequestModelByPath(const std::string& a_path, std::function<void(RE::NiAVObject*)> a_callback) {
@@ -556,12 +557,17 @@ namespace IAD {
 	}
 
 	void ModelManager::RequestModelByPath(const std::string& a_path, const ModelCleanupPolicy& a_cleanupPolicy, std::function<void(RE::NiAVObject*)> a_callback) {
+		RequestModelByPath(0, a_path, a_cleanupPolicy, std::move(a_callback));
+	}
+
+	void ModelManager::RequestModelByPath(RE::TESFormID a_actorFormID, const std::string& a_path, const ModelCleanupPolicy& a_cleanupPolicy, std::function<void(RE::NiAVObject*)> a_callback) {
 		if (a_path.empty()) { a_callback(nullptr); return; }
 
 		AsyncModelRequest req;
 		req.tempRef = nullptr;
 		req.originalExtra = nullptr;
 		req.customExtra = nullptr;
+		req.actorFormID = a_actorFormID;
 		req.isMagazineExtraction = false;
 		req.cleanupPolicy = a_cleanupPolicy;
 		req.sceneGeneration = GetSceneGeneration();
@@ -569,7 +575,7 @@ namespace IAD {
 		req.callback = a_callback;
 
 		std::lock_guard<std::mutex> lock(_queueMutex);
-		_asyncLoadQueue.push(req);
+		_asyncLoadQueue.push_back(std::move(req));
 	}
 
 	void ModelManager::RequestStaticFormModel(RE::Actor* a_actor, RE::TESBoundObject* a_form, const ModelCleanupPolicy& a_cleanupPolicy, std::function<void(RE::NiAVObject*)> a_callback) {
@@ -607,6 +613,7 @@ namespace IAD {
 			req.tempRef = tempRef;
 			req.originalExtra = originalExtra;
 			req.customExtra = payloadExtra;
+			req.actorFormID = a_actor->GetFormID();
 			req.isMagazineExtraction = false;
 			req.loadFirstPersonModel = false;
 			req.cleanupPolicy = a_cleanupPolicy;
@@ -616,7 +623,7 @@ namespace IAD {
 			REX::INFO("[IAD StaticForm] player={:08X} assembling default OMOD model for {:08X}",
 				a_actor->GetFormID(), weapon->GetFormID());
 			std::lock_guard<std::mutex> lock(_queueMutex);
-			_asyncLoadQueue.push(req);
+			_asyncLoadQueue.push_back(std::move(req));
 			return;
 		}
 
@@ -639,7 +646,7 @@ namespace IAD {
 		}
 
 		REX::INFO("[IAD StaticForm] requesting direct model {:08X}: {}", a_form->GetFormID(), path);
-		RequestModelByPath(path, a_cleanupPolicy, std::move(a_callback));
+		RequestModelByPath(a_actor ? a_actor->GetFormID() : 0, path, a_cleanupPolicy, std::move(a_callback));
 	}
 
 	void ModelManager::RequestFormModel(RE::Actor* a_actor, RE::TESBoundObject* a_form, bool a_extractMagazine, bool a_extractProjectile, std::function<void(RE::NiAVObject*)> a_callback) {
@@ -678,6 +685,7 @@ namespace IAD {
 		req.tempRef = tempRef;
 		req.originalExtra = originalExtra;
 		req.customExtra = payloadExtra;
+		req.actorFormID = a_actor->GetFormID();
 		req.isMagazineExtraction = a_extractMagazine;
 		req.loadFirstPersonModel = a_loadFirstPersonModel && a_form->As<RE::TESObjectWEAP>() != nullptr;
 		req.cleanupPolicy = a_cleanupPolicy;
@@ -686,7 +694,7 @@ namespace IAD {
 		req.callback = a_callback;
 
 		std::lock_guard<std::mutex> lock(_queueMutex);
-		_asyncLoadQueue.push(req);
+		_asyncLoadQueue.push_back(std::move(req));
 	}
 
 	RE::NiAVObject* ModelManager::ExtractMagazineNode(RE::NiAVObject* a_root) {
@@ -758,6 +766,7 @@ namespace IAD {
 			rawExtra->CopyList(a_weapon.stack->extra.get());
 		}
 		req.customExtra.reset(rawExtra);
+		req.actorFormID = a_actor->GetFormID();
 		req.isMagazineExtraction = true;
 		req.loadFirstPersonModel = a_loadFirstPersonModel && a_weapon.object && a_weapon.object->As<RE::TESObjectWEAP>() != nullptr;
 		req.cleanupPolicy = a_cleanupPolicy;
@@ -766,17 +775,36 @@ namespace IAD {
 		req.callback = a_callback;
 
 		std::lock_guard<std::mutex> lock(_queueMutex);
-		_asyncLoadQueue.push(req);
+		_asyncLoadQueue.push_back(std::move(req));
 	}
 
 	void ModelManager::ProcessAsyncQueue() {
 		if (g_isGameSaving || g_isGameLoading || g_isMainMenuTransition) return;
 
-		std::lock_guard<std::mutex> lock(_queueMutex);
-		if (_asyncLoadQueue.empty()) return;
+		AsyncModelRequest req;
+		{
+			std::lock_guard<std::mutex> lock(_queueMutex);
+			if (_asyncLoadQueue.empty()) return;
 
-		auto req = _asyncLoadQueue.front();
-		_asyncLoadQueue.pop();
+			// A player weapon switch can enqueue several evaluations before the
+			// main-thread model pass reaches them. Prefer the newest player-owned
+			// request so stale player entries cannot delay the visible result.
+			// NPC and unowned requests retain FIFO order when no player request is pending.
+			const auto player = RE::PlayerCharacter::GetSingleton();
+			const auto playerFormID = player ? player->GetFormID() : 0;
+			auto selected = _asyncLoadQueue.begin();
+			if (playerFormID != 0) {
+				for (auto it = _asyncLoadQueue.end(); it != _asyncLoadQueue.begin();) {
+					--it;
+					if (it->actorFormID == playerFormID) {
+						selected = it;
+						break;
+					}
+				}
+			}
+			req = std::move(*selected);
+			_asyncLoadQueue.erase(selected);
+		}
 
 		if (req.sceneGeneration != GetSceneGeneration()) {
 			if (req.tempRef) {

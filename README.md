@@ -41,6 +41,11 @@ The build copies the generated DLL and PDB to `data/F4SE/Plugins/`. The PDB is
 ignored by Git and is useful only for local debugging. The runtime release
 archive is maintained separately from this source repository.
 
+For the recommended local workflow inside the Fallout 4 workspace, see
+`docs/Local-Development.md`. The workspace checkout keeps the public source in
+`open-source/`; generated DLLs, Papyrus output, runtime configuration, and MO2
+deployment files stay outside this repository.
+
 ## Runtime Requirements
 
 - Fallout 4 with a matching runtime
@@ -50,6 +55,7 @@ archive is maintained separately from this source repository.
 
 ## Documentation
 
+- `docs/Local-Development.md`: repeatable workspace build and GitHub update workflow
 - `docs/NexusMods-Description.md`: ready-to-paste Nexus Mods page
 - `docs/Third-Party-Notices.md`: third-party licenses and acknowledgements
 - `docs/FO4-IED-architecture.md`: architecture and behavior notes

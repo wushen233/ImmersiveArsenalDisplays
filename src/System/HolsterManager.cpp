@@ -30,34 +30,11 @@
 #include <RE/B/BGSBipedObjectForm.h>
 #include <RE/B/BSTEvent.h>
 
-namespace IAD
-{
+	namespace IAD
+	{
 	static std::atomic<bool> g_playerEquipChanged{ false };
-	static std::atomic<std::uint64_t> g_playerEquipTransitionUntil{ 0 };
 
 	namespace {
-		constexpr std::uint64_t kPlayerEquipTransitionGraceMicros = 750000;
-
-		std::uint64_t GetSteadyClockMicros() noexcept {
-			return static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(
-				std::chrono::steady_clock::now().time_since_epoch()).count());
-		}
-
-		void ArmPlayerEquipTransition() noexcept {
-			g_playerEquipTransitionUntil.store(
-				GetSteadyClockMicros() + kPlayerEquipTransitionGraceMicros,
-				std::memory_order_release);
-		}
-
-		bool IsPlayerEquipTransitionPending(RE::Actor* a_actor) noexcept {
-			if (!a_actor || !a_actor->IsPlayerRef()) return false;
-			if (a_actor->weaponState != RE::WEAPON_STATE::kSheathed) {
-				g_playerEquipTransitionUntil.store(0, std::memory_order_release);
-				return false;
-			}
-			return g_playerEquipTransitionUntil.load(std::memory_order_acquire) > GetSteadyClockMicros();
-		}
-
 		bool EvaluateConditionTree(RE::Actor* a_actor, const ConditionNode& node) {
 			return ConditionEvaluator::EvaluateConditionTree(a_actor, node);
 		}
@@ -149,17 +126,15 @@ namespace IAD
 
 		bool ShouldHideWeaponDisplay(RE::Actor* a_actor, const HolsterSlot& a_state) noexcept {
 			if (!a_actor) return a_state.isWeaponHidden;
-			const bool weaponSwitchPending = IsPlayerEquipTransitionPending(a_actor);
 			return a_state.isSlotHidden ||
 				(a_state.hideWeaponWhenDrawn && a_state.isEquipped &&
-					(a_actor->weaponState != RE::WEAPON_STATE::kSheathed || weaponSwitchPending));
+					a_actor->weaponState != RE::WEAPON_STATE::kSheathed);
 		}
 
 		bool ShouldHideHolsterDisplay(RE::Actor* a_actor, const HolsterSlot& a_state) noexcept {
 			if (!a_actor) return a_state.isHolsterHidden;
-			const bool weaponSwitchPending = IsPlayerEquipTransitionPending(a_actor);
 			const bool hideForDrawnWeapon = a_state.hideWeaponWhenDrawn && a_state.isEquipped &&
-				(a_actor->weaponState != RE::WEAPON_STATE::kSheathed || weaponSwitchPending);
+				a_actor->weaponState != RE::WEAPON_STATE::kSheathed;
 			return a_state.isSlotHidden || (hideForDrawnWeapon && !a_state.keepHolsterWhenDrawn);
 		}
 
@@ -850,9 +825,6 @@ namespace IAD
 
 			if (a_event.actorAffected->IsPlayerRef()) {
 				g_playerEquipChanged.store(true);
-				if (a_event.actorAffected->weaponState == RE::WEAPON_STATE::kSheathed) {
-					ArmPlayerEquipTransition();
-				}
 			}
 		}
 		return RE::BSEventNotifyControl::kContinue;
@@ -1056,18 +1028,21 @@ namespace IAD
 	void HolsterManager::RequestEvaluateAll() {
 		if (ModelManager::IsMainMenuTransition()) return;
 		std::lock_guard<std::mutex> lock(_flagsMutex);
-		auto player = RE::PlayerCharacter::GetSingleton();
-		if (player) {
-			auto& state = _actorRefreshStates[player->GetFormID()];
+		auto queueActorEvaluation = [&](RE::Actor* a_actor) {
+			if (!a_actor || a_actor->IsDead(false) || a_actor->IsDeleted() || a_actor->IsDisabled()) {
+				return;
+			}
+			auto& state = _actorRefreshStates[a_actor->GetFormID()];
 			state.retired = false;
 			state.pendingFlags |= static_cast<uint32_t>(ControllerUpdateFlags::kEvaluateEquip);
-		}
+		};
+
+		auto player = RE::PlayerCharacter::GetSingleton();
+		queueActorEvaluation(player);
 		if (auto pl = RE::ProcessLists::GetSingleton()) {
 			for (auto& pHandle : pl->highActorHandles) {
 				if (auto actorPtr = pHandle.get()) {
-					auto& state = _actorRefreshStates[actorPtr->GetFormID()];
-					state.retired = false;
-					state.pendingFlags |= static_cast<uint32_t>(ControllerUpdateFlags::kEvaluateEquip);
+					queueActorEvaluation(actorPtr.get());
 				}
 			}
 		}
@@ -1422,11 +1397,6 @@ namespace IAD
 			if (currentFP != s_lastFirstPerson) { RequestEvaluate(player->GetFormID()); s_lastFirstPerson = currentFP; }
 
 			if (player->weaponState != s_lastWeaponState) {
-				const auto previousWeaponState = s_lastWeaponState;
-				if (previousWeaponState != RE::WEAPON_STATE::kSheathed ||
-					player->weaponState != RE::WEAPON_STATE::kSheathed) {
-					g_playerEquipTransitionUntil.store(0, std::memory_order_release);
-				}
 				RequestEvaluate(player->GetFormID());
 				s_lastWeaponState = player->weaponState;
 			}
@@ -1442,9 +1412,6 @@ namespace IAD
 			static std::uint64_t s_lastInventorySignature = 0;
 			const auto currentInventorySignature = GetInventorySignature(player);
 			if (currentInventorySignature != s_lastInventorySignature) {
-				if (player->weaponState == RE::WEAPON_STATE::kSheathed) {
-					ArmPlayerEquipTransition();
-				}
 				RequestEvaluate(player->GetFormID());
 				s_lastInventorySignature = currentInventorySignature;
 			}
@@ -1553,7 +1520,6 @@ namespace IAD
 		for (auto* actor : activeActors) {
 			if (!actor) continue;
 			if (actor != player && !processNPCDisplays) continue;
-			const auto activeEffectSignature = pollActiveEffects ? GetActiveEffectSignature(actor, watchedActiveEffectFormIDs) : 0;
 
 			if (actor->IsDead(false) || actor->IsDeleted() || actor->IsDisabled()) {
 				std::lock_guard<std::mutex> lock(_flagsMutex);
@@ -1581,6 +1547,7 @@ namespace IAD
 				continue;
 			}
 			else {
+				const auto activeEffectSignature = pollActiveEffects ? GetActiveEffectSignature(actor, watchedActiveEffectFormIDs) : 0;
 				bool newlyTracked = false;
 				std::lock_guard<std::mutex> lock(_flagsMutex);
 				auto& refreshState = _actorRefreshStates[actor->GetFormID()];
@@ -2777,9 +2744,6 @@ namespace IAD
 				sState.isEquipped = assignment.isEquippedInstance;
 
 				if (isPlayer && (previousFormID != winnerFormID || previousEquipped != sState.isEquipped)) {
-					if (a_actor->weaponState == RE::WEAPON_STATE::kSheathed) {
-						ArmPlayerEquipTransition();
-					}
 					REX::INFO(
 						"[IAD Resolve] player slot='{}' item {:08X}->{:08X} equipped {}->{} uid={} source={}",
 						sDef.slotName,
@@ -3287,7 +3251,7 @@ namespace IAD
 								});
 						}
 						};
-					if (!effectiveModelSwapPath.empty()) modelManager->RequestModelByPath(effectiveModelSwapPath, mainCleanupPolicy, callback);
+					if (!effectiveModelSwapPath.empty()) modelManager->RequestModelByPath(actorID, effectiveModelSwapPath, mainCleanupPolicy, callback);
 					else if (effectiveModelSwapFormID != 0) {
 						auto form = RE::TESForm::GetFormByID<RE::TESBoundObject>(effectiveModelSwapFormID);
 						if (form) {
@@ -3357,7 +3321,7 @@ namespace IAD
 								});
 							}
 							};
-						modelManager->RequestModelByPath(currentHolsterPath, hCallback);
+						modelManager->RequestModelByPath(actorID, currentHolsterPath, ModelCleanupPolicy{}, hCallback);
 					}
 				}
 
@@ -3455,7 +3419,7 @@ namespace IAD
 						}
 					}
 					else {
-						modelManager->RequestModelByPath(groupPath, groupCleanupPolicy, gCallback);
+						modelManager->RequestModelByPath(actorID, groupPath, groupCleanupPolicy, gCallback);
 					}
 				}
 
@@ -3534,10 +3498,9 @@ namespace IAD
 				// 👇========== 🌟 修复 2：完美同步收枪动画的显示时机 ==========👇
 				// 直接读取底层 weaponState: 只要没彻底收回裤裆 (kSheathed=0)，就依然强制隐藏背部模型！
 				bool isWeaponStateDrawn = (a_actor->weaponState != RE::WEAPON_STATE::kSheathed);
-				const bool weaponSwitchPending = IsPlayerEquipTransitionPending(a_actor);
 				
 				bool isBaseHidden = ConditionEvaluator::IsFirstPerson(a_actor) || condHidden || nodeHidden;
-				bool isWeaponDrawnHide = checkUnload && sState.isEquipped && (isWeaponStateDrawn || weaponSwitchPending);
+				bool isWeaponDrawnHide = checkUnload && sState.isEquipped && isWeaponStateDrawn;
 				// 👆==============================================================👆
 				sState.isSlotHidden = isBaseHidden;
 				sState.isWeaponHidden = isBaseHidden || isWeaponDrawnHide;

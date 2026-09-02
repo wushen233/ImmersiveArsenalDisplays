@@ -3,7 +3,7 @@
 #include "Engine/ConditionSystem.h"
 #include <vector>
 #include <chrono>
-#include <queue>
+#include <deque>
 #include <functional>
 #include <mutex>
 // 👇 修正为新库的首字母路径 .h
@@ -72,6 +72,7 @@ namespace IAD
 		RE::TESObjectREFR* tempRef = nullptr;
 		RE::BSTSmartPointer<RE::ExtraDataList> originalExtra;
 		RE::BSTSmartPointer<RE::ExtraDataList> customExtra;
+		RE::TESFormID actorFormID = 0;
 		bool isMagazineExtraction = false;
 		bool loadFirstPersonModel = false;
 		std::uint64_t sceneGeneration = 0;
@@ -96,6 +97,7 @@ namespace IAD
 		void RequestItemModel(RE::Actor* a_actor, ActiveItem& a_item, bool a_extractProjectile, const ModelCleanupPolicy& a_cleanupPolicy, bool a_loadFirstPersonModel, std::function<void(RE::NiAVObject*)> a_callback);
 		void RequestModelByPath(const std::string& a_path, std::function<void(RE::NiAVObject*)> a_callback);
 		void RequestModelByPath(const std::string& a_path, const ModelCleanupPolicy& a_cleanupPolicy, std::function<void(RE::NiAVObject*)> a_callback);
+		void RequestModelByPath(RE::TESFormID a_actorFormID, const std::string& a_path, const ModelCleanupPolicy& a_cleanupPolicy, std::function<void(RE::NiAVObject*)> a_callback);
 		void RequestStaticFormModel(RE::Actor* a_actor, RE::TESBoundObject* a_form, const ModelCleanupPolicy& a_cleanupPolicy, std::function<void(RE::NiAVObject*)> a_callback);
 		void RequestFormModel(RE::Actor* a_actor, RE::TESBoundObject* a_form, bool a_extractMagazine, bool a_extractProjectile, std::function<void(RE::NiAVObject*)> a_callback);
 		void RequestFormModel(RE::Actor* a_actor, RE::TESBoundObject* a_form, bool a_extractMagazine, bool a_extractProjectile, const ModelCleanupPolicy& a_cleanupPolicy, std::function<void(RE::NiAVObject*)> a_callback);
@@ -128,7 +130,7 @@ namespace IAD
 		std::vector<GCPendingItem> _gcQueue;
 		std::vector<RE::NiAVObject*> _activeClones;
 
-		std::queue<AsyncModelRequest> _asyncLoadQueue;
+		std::deque<AsyncModelRequest> _asyncLoadQueue;
 		std::mutex _queueMutex;
 
 	private:
