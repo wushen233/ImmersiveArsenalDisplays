@@ -28,6 +28,23 @@ IAD is display-only. It does not replace gameplay equipment, change inventories,
 [*]Named keybind states, runtime variables, active-effect conditions, quest-stage conditions, and Papyrus integration.
 [*]Equipment-event refresh, asynchronous model loading, scene-generation checks, death cleanup, and save/load protection.
 [*]In-game ImGui configuration editor with import/export support for global snapshots and Form-filter profiles.
+[*]Live World Preview Editor with clickable MOV equipment contours and CME node gizmos.
+[*]Right-drag character rotation, middle-drag pan, mouse-wheel zoom, precision modifiers, and multi-step Ctrl+Z editing history.
+[*]Ships with ready-to-use normal-body and power-armor display defaults; power armor automatically uses dedicated armor skeleton hosts and independent model transforms.
+[/list]
+
+[size=4][b]World Preview Editor[/b][/size]
+
+The Visualizer can show the live player character as an editing preview. Preview editing is enabled by default while the IAD menu is open.
+
+[list]
+[*]The visible marker family follows the focused Slots or Nodes window.
+[*]Click an equipment contour to select its MOV slot, or click a CME point to select its node.
+[*]Drag the red, green, or blue axis to edit the persistent local transform.
+[*]Use Shift for fine movement, Ctrl for coarse movement, and Ctrl + Shift for extra-fine movement.
+[*]Press Ctrl + Z repeatedly to undo completed drags in reverse order. Up to 64 edits are kept per preview session.
+[*]Right-drag empty preview space to rotate the character; use the middle button to pan and the mouse wheel to zoom.
+[*]Closing the IAD menu hides the preview and restores the temporary camera/character state.
 [/list]
 
 [size=4][b]Requirements[/b][/size]
@@ -63,10 +80,11 @@ The main configuration files are stored in:
 
 [code]
 Data/F4SE/Plugins/ImmersiveArsenalDisplays/ActiveConfig.json
+Data/F4SE/Plugins/ImmersiveArsenalDisplays/DefaultConfig.json
 Data/F4SE/Plugins/ImmersiveArsenalDisplays/IAD_Settings.json
 Data/F4SE/Plugins/ImmersiveArsenalDisplays/ImmersiveArsenalDisplays.ini[/code]
 
-Use the in-game editor for normal configuration. If no active configuration exists, IAD creates one from its default configuration. Exported snapshots and Form-filter profiles can be backed up independently.
+Use the in-game editor for normal configuration. If no active configuration exists, IAD creates one from the shipped default configuration. The default includes separate normal-body and power-armor display states; exported snapshots and Form-filter profiles can be backed up independently.
 
 Custom model and holster paths must point to files that exist in your Fallout 4 Data installation. IAD does not ship the test-only [b]10mm_R_thigh_f.nif[/b] holster mesh used during development.
 
@@ -150,6 +168,23 @@ IAD 仅负责展示，不会替换游戏装备、修改物品库存、添加武�
 [*]支持命名按键状态、运行时变量、活动效果条件、任务阶段条件和 Papyrus 接口。
 [*]支持装备事件刷新、异步模型加载、场景生命周期检查、死亡清理和读档保护。
 [*]提供游戏内 ImGui 配置编辑器，支持全局快照和 Form 过滤配置导入/导出。
+[*]提供实时角色预览编辑器，可点击 MOV 装备轮廓和 CME 节点操作柄。
+[*]支持右键旋转角色、中键平移、滚轮缩放、精细/粗略移动以及多步 Ctrl+Z 撤回。
+[*]内置普通人体和动力甲两套开箱即用的显示配置；进入动力甲后会自动使用专用 Armor 骨骼节点和独立模型变换。
+[/list]
+
+[size=4][b]角色预览编辑器[/b][/size]
+
+打开 IAD 菜单后，Visualizer 会默认启用实时角色预览编辑。预览显示当前游戏中的真实角色，不创建离屏替身。
+
+[list]
+[*]可视化内容会根据当前聚焦的装备插槽窗口或挂载节点窗口自动切换。
+[*]点击装备模型轮廓可选择对应 MOV 插槽，点击 CME 点位可选择对应节点。
+[*]拖动红、绿、蓝轴可以修改持久化的本地变换。
+[*]按住 Shift 进行精细移动，Ctrl 进行粗略移动，Ctrl + Shift 进行超精细移动。
+[*]连续按 Ctrl + Z 可以按编辑时间倒序撤回已完成的拖动，每次预览会话最多保留 64 条记录。
+[*]在空白预览区域按住右键旋转角色，中键平移，滚轮缩放。
+[*]关闭 IAD 菜单后预览会隐藏，并恢复临时镜头/角色状态。
 [/list]
 
 [size=4][b]环境要求[/b][/size]
@@ -185,10 +220,11 @@ IAD 不包含 ESP/ESM 插件。
 
 [code]
 Data/F4SE/Plugins/ImmersiveArsenalDisplays/ActiveConfig.json
+Data/F4SE/Plugins/ImmersiveArsenalDisplays/DefaultConfig.json
 Data/F4SE/Plugins/ImmersiveArsenalDisplays/IAD_Settings.json
 Data/F4SE/Plugins/ImmersiveArsenalDisplays/ImmersiveArsenalDisplays.ini[/code]
 
-日常配置请使用游戏内编辑器。如果没有活动配置，IAD 会根据默认配置创建。导出的快照和 Form 过滤配置可以单独备份。
+日常配置请使用游戏内编辑器。如果没有活动配置，IAD 会根据压缩包内置的默认配置创建。默认配置已经区分普通人体和动力甲显示状态；导出的快照和 Form 过滤配置可以单独备份。
 
 自定义模型和枪套路径必须指向 Fallout 4 Data 目录中实际存在的文件。本模组不包含开发测试使用的 [b]10mm_R_thigh_f.nif[/b] 枪套模型。
 

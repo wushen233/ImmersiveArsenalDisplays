@@ -4,8 +4,13 @@
 #include "Engine/NodeManager.h"
 #include "ModelManager.h"
 #include "Engine/ConditionSystem.h"
-#include "System/KeyBindStateManager.h"
 #include "Profile/GlobalProfileManager.h"
+#include "System/ActorDisplayContext.h"
+#include "System/ActorDisplayLifecycle.h"
+#include "System/ActorRuntimeContext.h"
+#include "System/AssignmentResolver.h"
+#include "System/ConditionRefreshPolicy.h"
+#include "UI/UIWorldPreviewSession.h"
 // [DISABLED] #include "Combat/VATSWeaponPart.h"
 
 // 替换为新库的路径
@@ -14,10 +19,6 @@
 #include <RE/U/UI.h>
 #include <RE/P/PlayerCharacter.h>
 #include <RE/A/Actor.h>
-#include <RE/A/ActiveEffect.h>
-#include <RE/A/ActiveEffectList.h>
-#include <RE/E/EffectItem.h>
-#include <RE/T/TESQuest.h>
 #include <RE/N/NiControllerManager.h>
 #include <RE/N/NiControllerSequence.h>
 #include <RE/N/NiCloningProcess.h>
@@ -29,71 +30,63 @@
 #include <RE/T/TESRace.h>
 #include <RE/B/BGSBipedObjectForm.h>
 #include <RE/B/BSTEvent.h>
+#include <RE/B/BSTriShape.h>
+#include <cstring>
 
 	namespace IAD
 	{
 	static std::atomic<bool> g_playerEquipChanged{ false };
 
 	namespace {
-		bool EvaluateConditionTree(RE::Actor* a_actor, const ConditionNode& node) {
-			return ConditionEvaluator::EvaluateConditionTree(a_actor, node);
+		// Fallout 4 stores the position stream of its regular render meshes as
+		// three IEEE-754 half floats. Keep contour sampling self-contained: the
+		// engine UnpackVertexData relocation is not a safe dependency for this
+		// diagnostic snapshot path, especially while a save is rebuilding clones.
+		float DecodePackedHalf(std::uint16_t a_value) noexcept {
+			const auto sign = static_cast<std::uint32_t>(a_value & 0x8000u) << 16;
+			const auto exponent = static_cast<std::uint32_t>((a_value >> 10) & 0x1Fu);
+			const auto fraction = static_cast<std::uint32_t>(a_value & 0x03FFu);
+
+			if (exponent == 0) {
+				if (fraction == 0) return (sign != 0) ? -0.0f : 0.0f;
+				const auto magnitude = std::ldexp(static_cast<float>(fraction), -24);
+				return (sign != 0) ? -magnitude : magnitude;
+			}
+
+			std::uint32_t bits = sign;
+			if (exponent == 0x1Fu) {
+				bits |= 0x7F800000u | (fraction << 13);
+			}
+			else {
+				bits |= ((exponent + 112u) << 23) | (fraction << 13);
+			}
+
+			float result = 0.0f;
+			std::memcpy(std::addressof(result), std::addressof(bits), sizeof(result));
+			return result;
 		}
 
-		std::uint64_t GetActiveEffectSignature(RE::Actor* a_actor, const std::vector<std::uint32_t>& a_watchedFormIDs) {
-			if (!a_actor || a_watchedFormIDs.empty()) return 0;
-			auto* effects = a_actor->GetActiveEffectList();
-			if (!effects) return 0;
-
-			struct ActiveEffectKey {
-				std::uint32_t spellFormID;
-				std::uint32_t effectFormID;
-				std::uint32_t sourceFormID;
-
-				auto Tie() const {
-					return std::tie(spellFormID, effectFormID, sourceFormID);
-				}
-			};
-
-			std::vector<ActiveEffectKey> activeEffects;
-			activeEffects.reserve(effects->data.size());
-			for (const auto& effectPtr : effects->data) {
-				auto* active = effectPtr.get();
-				if (!active ||
-					active->flags.any(RE::ActiveEffect::Flags::kInactive) ||
-					active->flags.any(RE::ActiveEffect::Flags::kRemovedEffects) ||
-					active->flags.any(RE::ActiveEffect::Flags::kDispelled) ||
-					active->flags.any(RE::ActiveEffect::Flags::kWornOff)) {
-					continue;
-				}
-
-				const auto spellFormID = active->spell ? active->spell->GetFormID() : 0;
-				const auto effectFormID = active->effect && active->effect->effectSetting ? active->effect->effectSetting->GetFormID() : 0;
-				const auto sourceFormID = active->source ? active->source->GetFormID() : 0;
-				const auto isWatched = [&](std::uint32_t formID) {
-					return formID != 0 && std::binary_search(a_watchedFormIDs.begin(), a_watchedFormIDs.end(), formID);
-				};
-				if (isWatched(spellFormID) || isWatched(effectFormID) || isWatched(sourceFormID)) {
-					activeEffects.push_back({ spellFormID, effectFormID, sourceFormID });
-				}
+		bool ReadPackedPosition(
+			const std::uint8_t* a_vertices,
+			std::size_t a_dataSize,
+			std::size_t a_stride,
+			std::size_t a_positionOffset,
+			std::size_t a_index,
+			RE::NiPoint3& a_result) noexcept {
+			if (!a_vertices || a_dataSize == 0 || a_stride < 6 ||
+				a_positionOffset > a_stride - 6 || a_index > (a_dataSize - a_positionOffset - 6) / a_stride) {
+				return false;
 			}
 
-			std::sort(activeEffects.begin(), activeEffects.end(), [](const auto& lhs, const auto& rhs) {
-				return lhs.Tie() < rhs.Tie();
-				});
-
-			std::uint64_t signature = 1469598103934665603ULL;
-			auto mix = [&signature](std::uint64_t a_value) {
-				signature ^= a_value;
-				signature *= 1099511628211ULL;
+			const auto offset = a_index * a_stride + a_positionOffset;
+			std::uint16_t packed[3]{};
+			std::memcpy(packed, a_vertices + offset, sizeof(packed));
+			a_result = {
+				DecodePackedHalf(packed[0]),
+				DecodePackedHalf(packed[1]),
+				DecodePackedHalf(packed[2])
 			};
-
-			for (const auto& effect : activeEffects) {
-				mix(effect.spellFormID);
-				mix(effect.effectFormID);
-				mix(effect.sourceFormID);
-			}
-			mix(activeEffects.size());
-			return signature;
+			return std::isfinite(a_result.x) && std::isfinite(a_result.y) && std::isfinite(a_result.z);
 		}
 
 		std::uint64_t GetInventorySignature(RE::Actor* a_actor) {
@@ -136,100 +129,6 @@
 			const bool hideForDrawnWeapon = a_state.hideWeaponWhenDrawn && a_state.isEquipped &&
 				a_actor->weaponState != RE::WEAPON_STATE::kSheathed;
 			return a_state.isSlotHidden || (hideForDrawnWeapon && !a_state.keepHolsterWhenDrawn);
-		}
-
-		bool UpdateConditionalVariables(RE::Actor* a_actor) {
-			if (!a_actor) return false;
-			auto* config = ConfigManager::GetSingleton();
-			const auto definitions = config->GetConditionalVariablesSnapshot();
-			bool changed = false;
-			bool equippedWeaponResolved = false;
-			std::uint32_t equippedWeaponFormID = 0;
-			auto resolveFormValue = [&](ConditionalVariableFormSource a_source, std::uint32_t a_staticValue) {
-				if (a_source != ConditionalVariableFormSource::kEquippedWeapon) return a_staticValue;
-				if (!equippedWeaponResolved) {
-					equippedWeaponResolved = true;
-					const auto items = Scanner::GetActiveItems(a_actor);
-					for (const auto& item : items) {
-						if (item.isEquipped && item.object && item.object->GetFormType() == RE::ENUM_FORM_ID::kWEAP) {
-							equippedWeaponFormID = item.object->GetFormID();
-							break;
-						}
-					}
-				}
-				return equippedWeaponFormID;
-			};
-
-			for (const auto& definition : definitions) {
-				if (!definition.enabled || definition.name.empty()) continue;
-				bool definitionChanged = false;
-
-				bool booleanValue = definition.defaultBooleanValue;
-				float numberValue = definition.defaultNumberValue;
-				std::uint32_t formIDValue = resolveFormValue(definition.defaultFormSource, definition.defaultFormIDValue);
-				std::string modelPathValue = definition.defaultModelPathValue;
-				for (const auto& rule : definition.rules) {
-					if (!ConditionEvaluator::EvaluateConditionTree(a_actor, rule.conditionTree)) continue;
-					booleanValue = rule.booleanValue;
-					numberValue = rule.numberValue;
-					formIDValue = resolveFormValue(rule.formSource, rule.formIDValue);
-					modelPathValue = rule.modelPathValue;
-					if (!rule.continueAfterMatch) break;
-				}
-
-			switch (definition.type) {
-			case ConditionalVariableType::kBoolean:
-				if (config->GetRuntimeVariable(definition.name) != booleanValue) {
-					config->SetRuntimeVariable(definition.name, booleanValue);
-					definitionChanged = true;
-					changed = true;
-				}
-				break;
-			case ConditionalVariableType::kNumber:
-				if (config->GetRuntimeNumberVariable(definition.name) != numberValue) {
-					config->SetRuntimeNumberVariable(definition.name, numberValue);
-					definitionChanged = true;
-					changed = true;
-				}
-				break;
-			case ConditionalVariableType::kForm:
-				if (config->GetRuntimeFormVariable(definition.name) != formIDValue) {
-					config->SetRuntimeFormVariable(definition.name, formIDValue);
-					definitionChanged = true;
-					changed = true;
-				}
-				break;
-			case ConditionalVariableType::kModelPath:
-				if (config->GetRuntimeModelPathVariable(definition.name) != modelPathValue) {
-					config->SetRuntimeModelPathVariable(definition.name, modelPathValue);
-					definitionChanged = true;
-					changed = true;
-				}
-				break;
-			}
-			if (definitionChanged) {
-				REX::INFO("[IAD ConditionalVariable] '{}' updated", definition.name);
-			}
-		}
-		return changed;
-	}
-
-		void Safe_Abandon_Slot(std::vector<RE::NiPointer<RE::NiAVObject>>& a_models, bool a_skipSceneDetach = false, bool a_forceSceneDetach = false) {
-			// 💡 kPreLoadGame 派发自存档加载工作线程 (BSJobs::JobThread)，跨线程调用 NiNode::DetachChild
-			// 会与引擎自身的 3D 场景销毁竞争，造成野指针 access violation。引擎接下来就会销毁整个
-			// 场景树，我们只需丢掉持有的 NiPointer 引用，让引擎自然回收即可。
-			const bool skipSceneDetach = a_skipSceneDetach || ModelManager::IsGameSaving() ||
-				(!a_forceSceneDetach && ModelManager::IsGameLoading());
-			for (auto& model : a_models) {
-				if (model && !skipSceneDetach) {
-					if (model->parent) {
-						model->parent->DetachChild(model.get());
-					}
-					model->SetAppCulled(true);
-					model->local.scale = 0.0f;
-				}
-			}
-			a_models.clear();
 		}
 
 		std::string FormatCMEName(const std::string& name) {
@@ -310,12 +209,8 @@
 
 		TransformData ResolveStateTransform(const StateOverride& a_state) {
 			if (a_state.useTransformPreset && !a_state.targetTransformPreset.empty()) {
-				auto& manager = Profile::GlobalProfileManager::GetSingleton().Transforms();
-				if (!manager.IsInitialized()) {
-					manager.Load();
-				}
-				if (const auto* record = manager.Find(a_state.targetTransformPreset)) {
-					return record->data;
+				if (const auto resolved = Profile::GlobalProfileManager::GetSingleton().ResolveRuntimeTransform(a_state.targetTransformPreset)) {
+					return *resolved;
 				}
 			}
 			return a_state.independentTransform;
@@ -416,12 +311,8 @@
 
 		PhysicsValues ResolveStatePhysics(const StateOverride& a_state) {
 			if (a_state.usePhysicsPreset && !a_state.targetPhysicsPreset.empty()) {
-				auto& manager = Profile::GlobalProfileManager::GetSingleton().Physics();
-				if (!manager.IsInitialized()) {
-					manager.Load();
-				}
-				if (const auto* record = manager.Find(a_state.targetPhysicsPreset)) {
-					return record->data;
+				if (const auto resolved = Profile::GlobalProfileManager::GetSingleton().ResolveRuntimePhysics(a_state.targetPhysicsPreset)) {
+					return *resolved;
 				}
 			}
 			return a_state.independentPhysics;
@@ -1011,30 +902,127 @@
 
 	void HolsterManager::RequestEvaluate(RE::TESFormID a_formID) {
 		if (a_formID == 0 || ModelManager::IsMainMenuTransition()) return;
-		std::lock_guard<std::mutex> lock(_flagsMutex);
-		auto& state = _actorRefreshStates[a_formID];
-		state.retired = false;
-		state.pendingFlags |= static_cast<uint32_t>(ControllerUpdateFlags::kEvaluateEquip);
+		_refreshScheduler.RequestEvaluate(a_formID);
 	}
 
 	void HolsterManager::RequestTransformUpdate(RE::TESFormID a_formID) {
 		if (a_formID == 0 || ModelManager::IsMainMenuTransition()) return;
-		std::lock_guard<std::mutex> lock(_flagsMutex);
-		auto& state = _actorRefreshStates[a_formID];
-		state.retired = false;
-		state.pendingFlags |= static_cast<uint32_t>(ControllerUpdateFlags::kUpdateTransform);
+		_refreshScheduler.RequestTransformUpdate(a_formID);
+	}
+
+	void HolsterManager::RequestPreviewTransform(
+		RE::TESFormID a_formID,
+		const std::string& a_name,
+		bool a_isMOV,
+		const TransformData& a_transform)
+	{
+		if (a_formID == 0 || a_name.empty() || ModelManager::IsMainMenuTransition()) return;
+		std::lock_guard<std::mutex> lock(_previewTransformMutex);
+		_pendingPreviewTransform.valid = true;
+		_pendingPreviewTransform.reset = false;
+		_pendingPreviewTransform.formID = a_formID;
+		_pendingPreviewTransform.isMOV = a_isMOV;
+		_pendingPreviewTransform.name = a_name;
+		_pendingPreviewTransform.transform = a_transform;
+	}
+
+	void HolsterManager::RequestPreviewTransformReset(RE::TESFormID a_formID)
+	{
+		if (a_formID == 0) return;
+		std::lock_guard<std::mutex> lock(_previewTransformMutex);
+		_pendingPreviewTransform = {};
+		_pendingPreviewTransform.valid = true;
+		_pendingPreviewTransform.reset = true;
+		_pendingPreviewTransform.formID = a_formID;
+	}
+
+	void HolsterManager::ProcessPreviewTransformRequest()
+	{
+		PendingPreviewTransform request;
+		{
+			std::lock_guard<std::mutex> lock(_previewTransformMutex);
+			if (!_pendingPreviewTransform.valid) return;
+			request = std::move(_pendingPreviewTransform);
+			_pendingPreviewTransform = {};
+		}
+
+		std::lock_guard<std::mutex> evalLock(_evalMutex);
+		auto slotsIt = _actorDisplaySlots.find(request.formID);
+		if (request.reset) {
+			if (slotsIt != _actorDisplaySlots.end()) {
+				for (auto& [slotName, state] : slotsIt->second) {
+					state.previewTransformActive = false;
+					state.physicsSim.reset();
+				}
+			}
+			return;
+		}
+
+		if (request.isMOV) {
+			if (slotsIt == _actorDisplaySlots.end()) {
+				REX::WARN("[IAD Preview] MOV preview state is missing for actor {:08X}, name='{}'", request.formID, request.name);
+				return;
+			}
+
+			// Config slot keys and managed scene-node names are allowed to use
+			// different forms. The editor publishes the user-facing name, while
+			// _actorDisplaySlots is keyed by the exact JSON slot key. Resolve all
+			// supported forms before giving up so a prefixed IAD_MOV_* slot still
+			// receives the live preview transform.
+			const std::string strippedName = StripManagedNodePrefix(request.name);
+			auto slotIt = slotsIt->second.find(request.name);
+			if (slotIt == slotsIt->second.end()) slotIt = slotsIt->second.find(strippedName);
+			if (slotIt == slotsIt->second.end()) slotIt = slotsIt->second.find(FormatMOVName(strippedName));
+			if (slotIt == slotsIt->second.end()) {
+				for (auto it = slotsIt->second.begin(); it != slotsIt->second.end(); ++it) {
+					if (StripManagedNodePrefix(it->first) == strippedName) {
+						slotIt = it;
+						break;
+					}
+				}
+			}
+			if (slotIt == slotsIt->second.end()) {
+				REX::WARN("[IAD Preview] MOV preview target not found for actor {:08X}, name='{}', normalized='{}'", request.formID, request.name, strippedName);
+				return;
+			}
+
+			slotIt->second.slotBaseTransform = request.transform;
+			slotIt->second.previewTransformActive = true;
+			slotIt->second.physicsSim.reset();
+			return;
+		}
+
+		auto nodesIt = _actorNodeStates.find(request.formID);
+		if (nodesIt == _actorNodeStates.end()) {
+			REX::WARN("[IAD Preview] CME preview state is missing for actor {:08X}, name='{}'", request.formID, request.name);
+			return;
+		}
+		const std::string strippedName = StripManagedNodePrefix(request.name);
+		auto nodeIt = nodesIt->second.find(request.name);
+		if (nodeIt == nodesIt->second.end()) nodeIt = nodesIt->second.find(strippedName);
+		if (nodeIt == nodesIt->second.end()) nodeIt = nodesIt->second.find(FormatCMEName(strippedName));
+		if (nodeIt == nodesIt->second.end()) {
+			for (auto it = nodesIt->second.begin(); it != nodesIt->second.end(); ++it) {
+				if (StripManagedNodePrefix(it->first) == strippedName) {
+					nodeIt = it;
+					break;
+				}
+			}
+		}
+		if (nodeIt == nodesIt->second.end()) {
+			REX::WARN("[IAD Preview] CME preview target not found for actor {:08X}, name='{}', normalized='{}'", request.formID, request.name, strippedName);
+			return;
+		}
+		nodeIt->second.finalTransform = request.transform;
 	}
 
 	void HolsterManager::RequestEvaluateAll() {
 		if (ModelManager::IsMainMenuTransition()) return;
-		std::lock_guard<std::mutex> lock(_flagsMutex);
 		auto queueActorEvaluation = [&](RE::Actor* a_actor) {
 			if (!a_actor || a_actor->IsDead(false) || a_actor->IsDeleted() || a_actor->IsDisabled()) {
 				return;
 			}
-			auto& state = _actorRefreshStates[a_actor->GetFormID()];
-			state.retired = false;
-			state.pendingFlags |= static_cast<uint32_t>(ControllerUpdateFlags::kEvaluateEquip);
+			_refreshScheduler.RequestEvaluate(a_actor->GetFormID());
 		};
 
 		auto player = RE::PlayerCharacter::GetSingleton();
@@ -1049,25 +1037,11 @@
 	}
 
 	bool HolsterManager::BeginEvaluation(RE::TESFormID a_formID, bool a_force) {
-		std::lock_guard<std::mutex> lock(_flagsMutex);
-		auto& state = _actorRefreshStates[a_formID];
-		const auto evaluateFlag = static_cast<uint32_t>(ControllerUpdateFlags::kEvaluateEquip);
-		if (state.retired || state.evaluationQueued || (!a_force && (state.pendingFlags & evaluateFlag) == 0)) {
-			return false;
-		}
-
-		state.pendingFlags &= ~evaluateFlag;
-		state.evaluationQueued = true;
-		return true;
+		return _refreshScheduler.BeginEvaluation(a_formID, a_force);
 	}
 
 	void HolsterManager::CompleteEvaluation(RE::TESFormID a_formID) {
-		std::lock_guard<std::mutex> lock(_flagsMutex);
-		auto it = _actorRefreshStates.find(a_formID);
-		if (it == _actorRefreshStates.end()) return;
-
-		it->second.evaluationQueued = false;
-		it->second.lastEvaluationTick = _currentUpdateTick;
+		_refreshScheduler.CompleteEvaluation(a_formID, _currentUpdateTick);
 	}
 
 	void HolsterManager::ClearActorHistory(RE::TESFormID a_formID) {
@@ -1101,24 +1075,10 @@
 		if (_currentUpdateTick - _lastLFSweepTime < kSweepIntervalTicks) return;
 
 		_lastLFSweepTime = _currentUpdateTick;
-		std::vector<RE::TESFormID> retiredActors;
-		{
-			std::lock_guard<std::mutex> lock(_flagsMutex);
-			for (auto it = _actorRefreshStates.begin(); it != _actorRefreshStates.end();) {
-				const auto actorID = it->first;
-				const auto& state = it->second;
-				const bool stale = actorID != a_playerID &&
-					!state.evaluationQueued &&
-					_currentUpdateTick - state.lastSeenTick > kStaleActorTicks;
-				if (!stale) {
-					++it;
-					continue;
-				}
-
-				retiredActors.push_back(actorID);
-				it = _actorRefreshStates.erase(it);
-			}
-		}
+		const auto retiredActors = _refreshScheduler.CollectStaleActors(
+			a_playerID,
+			_currentUpdateTick,
+			kStaleActorTicks);
 
 		for (const auto actorID : retiredActors) {
 			ClearActorSlots(actorID, true);
@@ -1142,12 +1102,7 @@
 		if (it != _actorDisplaySlots.end()) {
 			for (auto& [slotName, sState] : it->second) {
 				// 永远无条件执行安全释放，绝不制造野指针！
-				Safe_Abandon_Slot(sState.currentModels, a_skipSceneDetach, a_forceSceneDetach);
-				Safe_Abandon_Slot(sState.currentHolsters, a_skipSceneDetach, a_forceSceneDetach);
-				Safe_Abandon_Slot(sState.currentModelGroups, a_skipSceneDetach, a_forceSceneDetach);
-				Safe_Abandon_Slot(sState.oldModels, a_skipSceneDetach, a_forceSceneDetach);
-				Safe_Abandon_Slot(sState.oldHolsters, a_skipSceneDetach, a_forceSceneDetach);
-				Safe_Abandon_Slot(sState.oldModelGroups, a_skipSceneDetach, a_forceSceneDetach);
+				ActorDisplayLifecycle::ClearSlotModels(sState, a_skipSceneDetach, a_forceSceneDetach);
 
 				sState.lastTargetNode = ""; sState.lastHolsterPath = ""; sState.lastModelRequestSignature = ""; sState.lastModelGroupSignature = "";
 				sState.lastItem = nullptr;
@@ -1206,19 +1161,14 @@
 			}
 		}
 
-		_needsRefresh = true;
+		_refreshScheduler.RequestGlobalRefresh();
 	}
 
 	void HolsterManager::ClearAllActorSlots(bool a_skipSceneDetach) {
 		std::lock_guard<std::mutex> evalLock(_evalMutex);
 		for (auto& [formID, actorSlots] : _actorDisplaySlots) {
 			for (auto& [slotName, sState] : actorSlots) {
-				Safe_Abandon_Slot(sState.currentModels, a_skipSceneDetach);
-				Safe_Abandon_Slot(sState.currentHolsters, a_skipSceneDetach);
-				Safe_Abandon_Slot(sState.currentModelGroups, a_skipSceneDetach);
-				Safe_Abandon_Slot(sState.oldModels, a_skipSceneDetach);
-				Safe_Abandon_Slot(sState.oldHolsters, a_skipSceneDetach);
-				Safe_Abandon_Slot(sState.oldModelGroups, a_skipSceneDetach);
+				ActorDisplayLifecycle::ClearSlotModels(sState, a_skipSceneDetach);
 			}
 		}
 		_actorDisplaySlots.clear();
@@ -1248,10 +1198,7 @@
 			_recentAcquiredForms.clear();
 			_recentAcquiredSequence = 0;
 		}
-		{
-			std::lock_guard<std::mutex> lock(_flagsMutex);
-			_actorRefreshStates.clear();
-		}
+		_refreshScheduler.ClearAll();
 	}
 
 	void HolsterManager::DetachAllActorSlotsForSceneTeardown() {
@@ -1259,12 +1206,7 @@
 		std::size_t actorCount = _actorDisplaySlots.size();
 		for (auto& [formID, actorSlots] : _actorDisplaySlots) {
 			for (auto& [slotName, sState] : actorSlots) {
-				Safe_Abandon_Slot(sState.currentModels, false, true);
-				Safe_Abandon_Slot(sState.currentHolsters, false, true);
-				Safe_Abandon_Slot(sState.currentModelGroups, false, true);
-				Safe_Abandon_Slot(sState.oldModels, false, true);
-				Safe_Abandon_Slot(sState.oldHolsters, false, true);
-				Safe_Abandon_Slot(sState.oldModelGroups, false, true);
+				ActorDisplayLifecycle::ClearSlotModels(sState, false, true);
 			}
 		}
 		_actorDisplaySlots.clear();
@@ -1294,21 +1236,28 @@
 			_recentAcquiredForms.clear();
 			_recentAcquiredSequence = 0;
 		}
-		{
-			std::lock_guard<std::mutex> lock(_flagsMutex);
-			_actorRefreshStates.clear();
-		}
+		_refreshScheduler.ClearAll();
 		REX::INFO("[IAD Lifecycle] scene teardown detached display models for {} actor(s)", actorCount);
 	}
 
 	void HolsterManager::Update() {
 		_currentUpdateTick++;
+		UI::UIWorldPreviewSession::GetSingleton().ProcessGameThread();
+		DebugSettings debugSettingsSnapshot;
+		{
+			std::lock_guard<std::mutex> lock(debugSettingsMutex);
+			debugSettingsSnapshot = debugSettings;
+		}
 		auto* config = ConfigManager::GetSingleton();
 		const auto runtimeSettings = config->GetRuntimeSettingsSnapshot();
 		auto* modelManager = ModelManager::GetSingleton();
 		modelManager->ProcessGarbageCollection();
 		if (ModelManager::IsMainMenuTransition()) return;
 		modelManager->ProcessAsyncQueue();
+		// Apply the latest editor value once per game update. The render/UI thread
+		// may publish many mouse samples between updates; only the newest one is
+		// relevant and this keeps scene writes on the game thread.
+		ProcessPreviewTransformRequest();
 		// Keep scene attachment and physics responsive, but schedule NPC inventory
 		// resolution as a distinct medium-frequency phase. Pending actor flags remain
 		// latched until this phase consumes them.
@@ -1317,31 +1266,31 @@
 			1,
 			60);
 		const bool runMediumPhase = (_currentUpdateTick % npcEvaluationIntervalTicks) == 0;
-		constexpr std::uint64_t kActiveEffectPollIntervalTicks = 16;
-		const auto watchedActiveEffectFormIDs = (_currentUpdateTick % kActiveEffectPollIntervalTicks) == 0 ?
-			ConfigManager::GetSingleton()->GetActiveEffectConditionFormIDsSnapshot() :
-			std::vector<std::uint32_t>{};
-		const bool pollActiveEffects = !watchedActiveEffectFormIDs.empty();
 
 		static int s_loadDelayFrames = 0;
+		static std::uint64_t s_previewContourStableSince = 0;
+		static RE::NiNode* s_previewContourRoot = nullptr;
 
-		if (_needsRefresh.exchange(false)) {
-			bool expected = false;
-			if (_forceRefreshTaskQueued.compare_exchange_strong(expected, true)) {
+		if (_refreshScheduler.ConsumeGlobalRefreshRequest()) {
+			if (_refreshScheduler.TryQueueGlobalRefreshTask()) {
 				REX::INFO("[IAD Refresh] queued consolidated global refresh");
 				auto taskInterface = F4SE::GetTaskInterface();
 				if (taskInterface) {
 					taskInterface->AddTask([]() {
 						auto* manager = IAD::HolsterManager::GetSingleton();
 						manager->ExecuteForceRefresh();
-						manager->_forceRefreshTaskQueued = false;
+						manager->_refreshScheduler.CompleteGlobalRefreshTask();
 						});
 					s_loadDelayFrames = 1;
 				}
 				else {
-					_forceRefreshTaskQueued = false;
-					_needsRefresh = true;
+					_refreshScheduler.RequeueGlobalRefresh();
 				}
+			}
+			else {
+				// A task is already pending. Preserve the request for the next
+				// task completion instead of losing a global condition change.
+				_refreshScheduler.RequestGlobalRefresh();
 			}
 		}
 
@@ -1425,70 +1374,19 @@
 			s_wasPipboyOpen = isPipboyOpen;
 		}
 
-		// IED-style named bindings own a persistent multi-state counter. Legacy raw
-		// virtual-key condition entries remain supported as an edge-triggered fallback.
-		constexpr std::uint64_t kKeyBindConfigScanIntervalTicks = 16;
-		if (_currentUpdateTick - _lastKeyBindConfigScanTick >= kKeyBindConfigScanIntervalTicks) {
-			_activeKeyBindConditions = ConfigManager::GetSingleton()->GetKeyBindConditionKeysSnapshot();
-			_lastKeyBindConfigScanTick = _currentUpdateTick;
-			for (auto it = _keyBindStates.begin(); it != _keyBindStates.end();) {
-				if (std::find(_activeKeyBindConditions.begin(), _activeKeyBindConditions.end(), it->first) == _activeKeyBindConditions.end()) {
-					it = _keyBindStates.erase(it);
-				}
-				else {
-					++it;
-				}
-			}
-		}
-
-		const auto keyBindDefinitions = ConfigManager::GetSingleton()->GetKeyBindDefinitionsSnapshot();
-		bool keyBindStateChanged = KeyBindStateManager::GetSingleton()->Update(keyBindDefinitions);
-		for (const auto& key : _activeKeyBindConditions) {
-			if (keyBindDefinitions.contains(key)) {
-				continue;
-			}
-			const auto isDown = ConditionEvaluator::KeyBindStateMatches(key, ">0");
-			auto [it, inserted] = _keyBindStates.emplace(key, isDown);
-			if (!inserted && it->second != isDown) {
-				it->second = isDown;
-				keyBindStateChanged = true;
-				REX::INFO("[IAD Condition] legacy KeyBindState '{}' changed to {}; queued refresh", key, isDown ? "down" : "up");
-			}
-		}
-		if (keyBindStateChanged) {
+		const auto conditionRefresh = _conditionRefreshPolicy.Update(_currentUpdateTick, player);
+		if (conditionRefresh.keyBindStateChanged) {
 			RequestEvaluateAll();
 		}
-
-		constexpr std::uint64_t kConditionalVariableUpdateIntervalTicks = 16;
-		if (player && (_currentUpdateTick % kConditionalVariableUpdateIntervalTicks) == 0 && UpdateConditionalVariables(player)) {
+		if (conditionRefresh.conditionalVariablesChanged) {
 			REX::INFO("[IAD ConditionalVariable] player condition values changed; queued refresh");
 			RequestEvaluateAll();
 		}
-
-		// Quest-stage conditions are global rather than actor events. Poll only the
-		// quests actually referenced by active configuration and coalesce refreshes.
-		constexpr std::uint64_t kQuestConditionScanIntervalTicks = 60;
-		if (_currentUpdateTick - _lastQuestConditionScanTick >= kQuestConditionScanIntervalTicks) {
-			const auto questFormIDs = ConfigManager::GetSingleton()->GetQuestStageConditionFormIDsSnapshot();
-			bool questStageChanged = false;
-			std::unordered_set<RE::TESFormID> activeQuestForms(questFormIDs.begin(), questFormIDs.end());
-			for (const auto formID : questFormIDs) {
-				auto* quest = RE::TESForm::GetFormByID<RE::TESQuest>(formID);
-				const auto stage = quest ? quest->currentStage : static_cast<std::uint16_t>(0);
-				auto [it, inserted] = _questConditionStages.emplace(formID, stage);
-				if (!inserted && it->second != stage) {
-					it->second = stage;
-					questStageChanged = true;
-					REX::INFO("[IAD Condition] quest {:08X} stage changed to {}; queued refresh", formID, stage);
-				}
-			}
-			for (auto it = _questConditionStages.begin(); it != _questConditionStages.end();) {
-				if (!activeQuestForms.contains(it->first)) it = _questConditionStages.erase(it);
-				else ++it;
-			}
-			_lastQuestConditionScanTick = _currentUpdateTick;
-			if (questStageChanged) RequestEvaluateAll();
+		if (conditionRefresh.questStageChanged) {
+			RequestEvaluateAll();
 		}
+		const auto& watchedActiveEffectFormIDs = conditionRefresh.watchedActiveEffectFormIDs;
+		const bool pollActiveEffects = conditionRefresh.pollActiveEffects;
 
 		std::vector<RE::Actor*> activeActors;
 		std::unordered_set<RE::TESFormID> activeActorIDs;
@@ -1507,6 +1405,7 @@
 
 		std::vector<DebugBox> newBoxes;
 		std::vector<DebugNode> newNodes;
+		std::vector<DebugBoundSphere> newBoundSpheres;
 
 		RE::NiPoint3 playerPos{ 0.0f, 0.0f, 0.0f };
 		if (player) {
@@ -1522,9 +1421,7 @@
 			if (actor != player && !processNPCDisplays) continue;
 
 			if (actor->IsDead(false) || actor->IsDeleted() || actor->IsDisabled()) {
-				std::lock_guard<std::mutex> lock(_flagsMutex);
-				auto& refreshState = _actorRefreshStates[actor->GetFormID()];
-				if (!refreshState.retired) {
+				if (_refreshScheduler.MarkRetired(actor->GetFormID())) {
 					auto formID = actor->GetFormID();
 					auto taskInterface = F4SE::GetTaskInterface();
 					if (taskInterface) {
@@ -1541,33 +1438,21 @@
 							}
 						});
 					}
-					refreshState.pendingFlags = 0;
-					refreshState.retired = true;
 				}
 				continue;
 			}
 			else {
-				const auto activeEffectSignature = pollActiveEffects ? GetActiveEffectSignature(actor, watchedActiveEffectFormIDs) : 0;
-				bool newlyTracked = false;
-				std::lock_guard<std::mutex> lock(_flagsMutex);
-				auto& refreshState = _actorRefreshStates[actor->GetFormID()];
-				newlyTracked = refreshState.lastSeenTick == 0;
-				const bool needsCacheClear = refreshState.retired || newlyTracked;
-				if (needsCacheClear) {
-					refreshState.retired = false;
-					refreshState.pendingFlags |= static_cast<uint32_t>(ControllerUpdateFlags::kEvaluateEquip);
+				const auto activeEffectSignature = pollActiveEffects ? ConditionRefreshPolicy::GetActiveEffectSignature(actor, watchedActiveEffectFormIDs) : 0;
+				const auto observation = _refreshScheduler.ObserveActor(
+					actor->GetFormID(),
+					_currentUpdateTick,
+					pollActiveEffects,
+					activeEffectSignature);
+				const bool newlyTracked = observation.newlyTracked;
+				const bool needsCacheClear = observation.needsCacheClear;
+				if (observation.activeEffectChanged && actor == player) {
+					REX::INFO("[IAD Condition] player active effects changed; queued refresh");
 				}
-				if (pollActiveEffects) {
-					if (refreshState.activeEffectSignatureInitialized && refreshState.activeEffectSignature != activeEffectSignature) {
-						refreshState.pendingFlags |= static_cast<uint32_t>(ControllerUpdateFlags::kEvaluateEquip);
-						if (actor == player) {
-							REX::INFO("[IAD Condition] player active effects changed; queued refresh");
-						}
-					}
-					refreshState.activeEffectSignature = activeEffectSignature;
-					refreshState.activeEffectSignatureInitialized = true;
-				}
-				refreshState.lastSeenTick = _currentUpdateTick;
 				if (needsCacheClear) {
 					NodeManager::ClearCache(actor->GetFormID());
 				}
@@ -1605,20 +1490,51 @@
 
 		RunLowFrequencyMaintenance(player ? player->GetFormID() : 0);
 
+		// A post-load 3D root can be visible before the display clones and their
+		// renderer buffers have finished settling. The normal evaluation delay is
+		// intentionally separate from contour sampling, so keep a root-specific
+		// grace window here as well. This also catches the same-tick second
+		// Is3DSafeAndCacheReady call after it observes a root replacement.
+		bool previewContourReady = false;
+		if (player && debugSettingsSnapshot.worldPreviewEdit &&
+			!player->IsDead(false) && !player->IsDeleted() && !player->IsDisabled()) {
+			auto* ui = RE::UI::GetSingleton();
+			const bool uiLoading = ui && (ui->GetMenuOpen("LoadingMenu") || ui->GetMenuOpen("FaderMenu"));
+			auto* currentRoot = player->Get3D(false) ? player->Get3D(false)->IsNode() : nullptr;
+			const bool sceneReady = !ModelManager::IsGameLoading() && !ModelManager::IsMainMenuTransition() &&
+				!uiLoading && player->GetFullyLoaded3D() != nullptr && currentRoot != nullptr &&
+				NodeManager::Is3DSafeAndCacheReady(player, _currentUpdateTick);
+
+			constexpr std::uint64_t kPreviewContourSettleTicks = 120;
+			if (!sceneReady || currentRoot != s_previewContourRoot) {
+				s_previewContourRoot = currentRoot;
+				s_previewContourStableSince = 0;
+			}
+			else {
+				if (s_previewContourStableSince == 0) s_previewContourStableSince = _currentUpdateTick;
+				previewContourReady = _currentUpdateTick - s_previewContourStableSince >= kPreviewContourSettleTicks;
+			}
+		}
+		else {
+			s_previewContourRoot = nullptr;
+			s_previewContourStableSince = 0;
+		}
+
+		if (previewContourReady) {
+			CollectModelBoundSpheres(player, newBoundSpheres);
+		}
+
 		if (player && !player->IsDead(false) && !player->IsDeleted() && !player->IsDisabled() && NodeManager::Is3DSafeAndCacheReady(player, _currentUpdateTick)) {
 			// Fallout 4 can emit several inventory and equip events for one player
 			// action. Keep the request latched, but merge the resulting scans.
 			constexpr std::uint64_t kPlayerEvaluationMinIntervalTicks = 8;
 			bool playerEvaluationDue = false;
-			{
-				std::lock_guard<std::mutex> lock(_flagsMutex);
-				auto& refreshState = _actorRefreshStates[player->GetFormID()];
-				const auto evaluateFlag = static_cast<uint32_t>(ControllerUpdateFlags::kEvaluateEquip);
-				playerEvaluationDue = !refreshState.retired &&
-					(refreshState.pendingFlags & evaluateFlag) != 0 &&
-					(refreshState.lastEvaluationTick == 0 ||
-						_currentUpdateTick - refreshState.lastEvaluationTick >= kPlayerEvaluationMinIntervalTicks);
-			}
+			const auto playerRefresh = _refreshScheduler.Snapshot(player->GetFormID());
+			playerEvaluationDue = !playerRefresh.retired &&
+				!playerRefresh.evaluationQueued &&
+				playerRefresh.HasPending(ActorRefreshFlag::kEvaluateEquip) &&
+				(playerRefresh.lastEvaluationTick == 0 ||
+					_currentUpdateTick - playerRefresh.lastEvaluationTick >= kPlayerEvaluationMinIntervalTicks);
 
 			if (playerEvaluationDue && BeginEvaluation(player->GetFormID(), false)) {
 				auto formID = player->GetFormID();
@@ -1646,14 +1562,11 @@
 			s_rrIndex++;
 
 			bool needsEval = false;
-			{
-				std::lock_guard<std::mutex> lock(_flagsMutex);
-				auto& refreshState = _actorRefreshStates[targetNPC->GetFormID()];
-				const auto evaluateFlag = static_cast<uint32_t>(ControllerUpdateFlags::kEvaluateEquip);
-				needsEval = !refreshState.retired &&
-					((refreshState.pendingFlags & evaluateFlag) != 0 ||
-						(_currentUpdateTick - refreshState.lastEvaluationTick > 120));
-			}
+			const auto npcRefresh = _refreshScheduler.Snapshot(targetNPC->GetFormID());
+			needsEval = !npcRefresh.retired &&
+				!npcRefresh.evaluationQueued &&
+				(npcRefresh.HasPending(ActorRefreshFlag::kEvaluateEquip) ||
+					(_currentUpdateTick - npcRefresh.lastEvaluationTick > 120));
 
 			if (needsEval && BeginEvaluation(targetNPC->GetFormID(), true)) {
 				auto formID = targetNPC->GetFormID();
@@ -1673,9 +1586,19 @@
 			}
 		}
 
-		std::lock_guard<std::mutex> lock(debugBoxMutex);
-		activeDebugBoxes = std::move(newBoxes);
-		activeDebugNodes = std::move(newNodes);
+		ActorDisplayIdentity displayIdentity;
+		if (player) {
+			displayIdentity.actorFormID = player->GetFormID();
+			displayIdentity.actor3DGeneration = NodeManager::GetActor3DGeneration(player->GetFormID());
+		}
+		displayIdentity.sceneGeneration = ModelManager::GetSceneGeneration();
+		ActorDisplaySnapshot displaySnapshot;
+		displaySnapshot.identity = displayIdentity;
+		displaySnapshot.settings = debugSettingsSnapshot;
+		displaySnapshot.boxes = std::move(newBoxes);
+		displaySnapshot.nodes = std::move(newNodes);
+		displaySnapshot.modelBounds = std::move(newBoundSpheres);
+		ActorDisplayContext::GetSingleton().Publish(std::move(displaySnapshot));
 	}
 
 	void HolsterManager::EvaluateActor(RE::Actor* a_actor) {
@@ -1687,6 +1610,7 @@
 		const auto runtimeSettings = config->GetRuntimeSettingsSnapshot();
 		RE::TESFormID actorID = a_actor->GetFormID();
 		if (config->IsActorDisplayBlocked(a_actor)) {
+			ActorRuntimeContext::GetSingleton().Invalidate(actorID);
 			auto slotStatesIt = _actorDisplaySlots.find(actorID);
 			if (slotStatesIt != _actorDisplaySlots.end()) {
 				auto cull = [](auto& models) {
@@ -1711,6 +1635,7 @@
 
 		bool isPlayer = a_actor->IsPlayerRef();
 		if (!isPlayer && !runtimeSettings.enableNPCDisplays) {
+			ActorRuntimeContext::GetSingleton().Invalidate(actorID);
 			// FO4 may still traverse cloth data attached beneath an IAD node while a
 			// nearby actor's 3D is being torn down. Cull only; lifecycle cleanup owns
 			// detachment at the established safe boundaries.
@@ -1726,7 +1651,11 @@
 			}
 			return;
 		}
-		if (a_actor->IsDead(false)) { ClearActorSlots_Internal(actorID, true); return; }
+		if (a_actor->IsDead(false)) {
+			ActorRuntimeContext::GetSingleton().Invalidate(actorID);
+			ClearActorSlots_Internal(actorID, true);
+			return;
+		}
 
 		// 替换 GetActorBase
 		auto base = a_actor->data.objectReference ? a_actor->data.objectReference->As<RE::TESNPC>() : nullptr;
@@ -1758,7 +1687,8 @@
 			return result;
 			};
 
-		auto scopedNodes = config->ResolveNodesWithScope(a_actor);
+		auto runtimeConfigSnapshot = config->GetRuntimeConfigSnapshot(a_actor);
+		auto& scopedNodes = runtimeConfigSnapshot.scopedNodes;
 		for (auto& scoped : scopedNodes) {
 			auto& nDef = scoped.data;
 			auto& nState = nodeStates[nDef.nodeName];
@@ -1855,45 +1785,52 @@
 			return std::find(types.begin(), types.end(), formType) != types.end();
 			};
 
-		std::stable_sort(candidateItems.begin(), candidateItems.end(), [&](const ActiveItem& a, const ActiveItem& b) {
-			if (runtimeSettings.prioritizeEquippedCandidates && a.isEquipped != b.isEquipped) return a.isEquipped > b.isEquipped;
-			if (a.isFavorited != b.isFavorited) return a.isFavorited > b.isFavorited;
-			auto aAcquired = GetAcquiredScore(a);
-			auto bAcquired = GetAcquiredScore(b);
-			if (aAcquired != bAcquired) return aAcquired > bAcquired;
-			// Damage and value are not display priorities. Display history resolves first;
-			// this only provides a stable fallback when no history is available.
-			return a.uid > b.uid;
-			});
+		AssignmentResolver::SortCandidates(candidateItems, {
+			runtimeSettings.prioritizeEquippedCandidates,
+			GetAcquiredScore
+		});
 
-		auto scopedSlots = config->ResolveSlotsWithScope(a_actor);
-		auto scopedCustoms = config->ResolveCustomsWithScope(a_actor);
+		auto& scopedSlots = runtimeConfigSnapshot.scopedSlots;
+		auto& scopedCustoms = runtimeConfigSnapshot.scopedCustoms;
 
-		std::vector<SlotDefinition*> sortedSlots;
-		for (auto& s : scopedSlots) sortedSlots.push_back(&s.data);
-		std::stable_sort(sortedSlots.begin(), sortedSlots.end(), [](SlotDefinition* a, SlotDefinition* b) {
-			if (a->priority != b->priority) return a->priority > b->priority;
-			return a->slotName < b->slotName;
-			});
+		ActorRuntimeSnapshot runtimeSnapshot;
+		runtimeSnapshot.identity.actorFormID = actorID;
+		runtimeSnapshot.identity.sceneGeneration = ModelManager::GetSceneGeneration();
+		runtimeSnapshot.identity.actor3DGeneration = NodeManager::GetActor3DGeneration(actorID);
+		runtimeSnapshot.runtimeSettings = runtimeSettings;
+		runtimeSnapshot.isPlayer = isPlayer;
+		runtimeSnapshot.isFemale = isFemale;
+		runtimeSnapshot.actor3DReady = a_actor->Get3D(false) != nullptr;
+	runtimeSnapshot.candidateItems.reserve(candidateItems.size());
+		for (const auto& item : candidateItems) {
+			ActorRuntimeItemSnapshot itemSnapshot;
+			itemSnapshot.formID = item.object ? item.object->GetFormID() : 0;
+			itemSnapshot.stackID = item.stackID;
+			itemSnapshot.uid = item.uid;
+			itemSnapshot.count = item.count;
+			itemSnapshot.isEquipped = item.isEquipped;
+			itemSnapshot.isFavorited = item.isFavorited;
+			itemSnapshot.ratingUsesInstanceData = item.ratingUsesInstanceData;
+			itemSnapshot.rating = item.rating;
+			runtimeSnapshot.candidateItems.push_back(itemSnapshot);
+		}
+		runtimeSnapshot.scopedSlots = scopedSlots;
+		runtimeSnapshot.scopedCustoms = scopedCustoms;
+		runtimeSnapshot.nodeStates.reserve(nodeStates.size());
+		for (const auto& [nodeName, nodeState] : nodeStates) {
+			ActorRuntimeNodeSnapshot nodeSnapshot;
+			nodeSnapshot.nodeName = nodeName;
+			nodeSnapshot.isHidden = nodeState.isHidden;
+			nodeSnapshot.isAbsolute = nodeState.isAbsolute;
+			nodeSnapshot.finalTransform = nodeState.finalTransform;
+			nodeSnapshot.activePhys = nodeState.activePhys;
+			nodeSnapshot.targetBones = nodeState.targetBones;
+			runtimeSnapshot.nodeStates.push_back(std::move(nodeSnapshot));
+		}
+		ActorRuntimeContext::GetSingleton().Publish(std::move(runtimeSnapshot));
 
-			enum class AssignmentSource {
-				kDedicatedAmmo,
-				kCustomConfiguredSlot,
-			kCustomRecentSlot,
-			kCustomPreferred,
-			kCustomFallback,
-			kPreferredItem,
-			kLastEquipped,
-			kStrongest,
-			kRandom,
-			kSlotPriority
-		};
-		struct AssignmentData {
-			ActiveItem* item;
-			CustomDefinition* custom;
-			bool isEquippedInstance;
-			AssignmentSource source;
-		};
+		const auto sortedSlots = AssignmentResolver::BuildSlotOrder(scopedSlots);
+
 		auto AssignmentSourceName = [](AssignmentSource a_source) -> const char* {
 			switch (a_source) {
 			case AssignmentSource::kDedicatedAmmo: return "dedicated-ammo";
@@ -1909,7 +1846,7 @@
 			}
 			return "unknown";
 		};
-		std::map<std::string, AssignmentData> finalAssignments;
+		AssignmentResolver::AssignmentResult finalAssignments;
 		std::unordered_map<ActiveItem*, bool> equippedConsumed;
 
 		auto ResolveEffectiveTargetNode = [&](const SlotDefinition& slotDef, const CustomDefinition* customMatch, ActiveItem* item) {
@@ -2004,7 +1941,8 @@
 			return std::find(customMatch->lastEquippedDisplaySlots.begin(), customMatch->lastEquippedDisplaySlots.end(), slotName) != customMatch->lastEquippedDisplaySlots.end();
 			};
 
-		auto ResolveSlotFormFilter = [](const SlotDefinition& slotDef) -> const FormFilter* {
+			std::map<std::string, FormFilter> runtimeFormFilters;
+			auto ResolveSlotFormFilter = [&](const SlotDefinition& slotDef) -> const FormFilter* {
 			if (!slotDef.itemFilter.useProfile) {
 				return &slotDef.itemFilter;
 			}
@@ -2013,68 +1951,51 @@
 				return nullptr;
 			}
 
-			auto& profileManager = Profile::GlobalProfileManager::GetSingleton();
-			if (!profileManager.IsLoaded()) {
+			const auto cached = runtimeFormFilters.find(slotDef.itemFilter.profileName);
+			if (cached != runtimeFormFilters.end()) {
+				return &cached->second;
+			}
+
+			const auto resolved = Profile::GlobalProfileManager::GetSingleton().ResolveRuntimeFormFilter(slotDef.itemFilter.profileName);
+			if (!resolved) {
 				return nullptr;
 			}
+			const auto result = runtimeFormFilters.emplace(slotDef.itemFilter.profileName, *resolved);
+			return &result.first->second;
+		};
 
-			const auto* record = profileManager.FormFilters().Find(slotDef.itemFilter.profileName);
-			return record && !record->parserErrors ? &record->data : nullptr;
+		auto MakeSlotEligibilityContext = [&](SlotDefinition& slotDef, bool equippedOnly, bool ignoreEquipmentEligibility, bool applyPriorityLimit) {
+			return AssignmentResolver::SlotEligibilityContext{
+				slotDef,
+				runtimeSettings.displayFavoritesOnly,
+				equippedOnly,
+				ignoreEquipmentEligibility,
+				applyPriorityLimit,
+				ResolveSlotFormFilter,
+				[&](ActiveItem* item) { return EvaluateConditionCached(slotDef.itemFilterConditionTree, item); },
+				[&](ActiveItem* item) {
+					return item && item->object && !ConditionEvaluator::CheckCannotWear(a_actor, item->object);
+				},
+				[&](ActiveItem* item) { return CheckBlackHole(slotDef, item, nullptr); },
+				[&](ActiveItem* item) { return equippedConsumed[item]; }
 			};
-
-		auto CheckSlotFilters = [&](SlotDefinition& slotDef, ActiveItem* item, bool ignoreEquipmentEligibility = false) -> bool {
-			const auto* effectiveFormFilter = ResolveSlotFormFilter(slotDef);
-			if (!effectiveFormFilter) return false;
-			bool hasBase = slotDef.advancedFilters.useBaseFilters;
-			bool hasKw = (slotDef.keywordMode != KeywordFilterMode::kNone);
-			bool hasFormList = !effectiveFormFilter->allowList.empty() || !effectiveFormFilter->denyList.empty() || effectiveFormFilter->denyAll;
-			bool hasTypes = !slotDef.allowedFormTypes.empty();
-			bool hasPreferred = !slotDef.preferredItems.empty();
-			bool hasCandidateConditions = ConditionEvaluator::HasConditionRules(slotDef.itemFilterConditionTree);
-			if (!hasBase && !hasKw && !hasFormList && !hasTypes && !hasPreferred && !hasCandidateConditions) return false;
-
-			if (slotDef.checkCannotWear && ConditionEvaluator::CheckCannotWear(a_actor, item->object)) return false;
-
-			bool requireFavOrEquipped = runtimeSettings.displayFavoritesOnly;
-			if (slotDef.overrideEquipmentMode) {
-				requireFavOrEquipped = slotDef.displayFavoritesOnly;
-			}
-
-			if (!ignoreEquipmentEligibility && requireFavOrEquipped && !item->isEquipped && !item->isFavorited) {
-				return false;
-			}
-
-			if (IsPreferredItemForSlot(slotDef, item)) {
-				const auto formID = item->object->GetFormID();
-				return !effectiveFormFilter->denyAll && effectiveFormFilter->denyList.find(formID) == effectiveFormFilter->denyList.end();
-			}
-
-			bool typeMatch = slotDef.allowedFormTypes.empty();
-			if (!typeMatch) {
-				uint8_t itemType = static_cast<uint8_t>(item->object->GetFormType());
-				for (auto t : slotDef.allowedFormTypes) if (itemType == t) { typeMatch = true; break; }
-			}
-			if (!typeMatch) return false;
-
-			if (!ConditionEvaluator::PassesFormFilter(item->object->GetFormID(), *effectiveFormFilter)) return false;
-			if (!ConditionEvaluator::PassesLegacyFilters(item->object, slotDef.advancedFilters, slotDef.keywordMode, slotDef.keywordGroups)) return false;
-			return EvaluateConditionCached(slotDef.itemFilterConditionTree, item);
-			};
+		};
 
 		auto TryAssignItemToSlot = [&](SlotDefinition& slotDef, ActiveItem* item, CustomDefinition* customMatch, AssignmentSource source) -> bool {
 			if (item->count <= 0) return false;
-			if (finalAssignments.count(slotDef.slotName)) return false;
+			if (finalAssignments.Contains(slotDef.slotName)) return false;
 			if (!slotDef.isEnabled) return false;
 
 			const bool isStaticCustom = customMatch && customMatch->displayFormWithoutInventory && item->stack == nullptr;
-			if (CheckSlotFilters(slotDef, item, isStaticCustom)) {
+			const auto eligibilityContext = MakeSlotEligibilityContext(slotDef, false, isStaticCustom, false);
+			if (AssignmentResolver::IsSlotCandidateEligible(eligibilityContext, item)) {
 				if (!CheckBlackHole(slotDef, item, customMatch)) {
 					bool isEqInst = false;
 					if (item->isEquipped && !equippedConsumed[item]) {
 						isEqInst = true;
 						equippedConsumed[item] = true;
 					}
-					finalAssignments[slotDef.slotName] = { item, customMatch, isEqInst, source };
+					if (!finalAssignments.TryAdd(slotDef.slotName, { item, customMatch, isEqInst, source })) return false;
 					item->count--;
 					return true;
 				}
@@ -2102,7 +2023,7 @@
 						return slotDef && slotDef->slotName == recentSlotName;
 						});
 					if (recentSlotIt != sortedSlots.end() && IsDisplaySlotAllowedForCustom(customMatch, recentSlotName)) {
-						const bool recentSlotOccupied = finalAssignments.count(recentSlotName) != 0;
+						const bool recentSlotOccupied = finalAssignments.Contains(recentSlotName);
 						if (isLastEquippedCustom && customMatch->lastEquippedDisableIfDisplaySlotOccupied && recentSlotOccupied) {
 							return false;
 						}
@@ -2134,61 +2055,6 @@
 					TryAssignItemToSlot(*slotDefPtr, item, customMatch, AssignmentSource::kCustomFallback)) return true;
 			}
 			return false;
-			};
-
-		auto GetSlotFormTypeRank = [](const SlotDefinition& slotDef, const ActiveItem* item) -> int {
-			if (slotDef.formTypePriority.empty() || !item || !item->object) return 0;
-			const auto formType = static_cast<std::uint8_t>(item->object->GetFormType());
-			auto it = std::find(slotDef.formTypePriority.begin(), slotDef.formTypePriority.end(), formType);
-			if (it == slotDef.formTypePriority.end()) return static_cast<int>(slotDef.formTypePriority.size());
-			return static_cast<int>(std::distance(slotDef.formTypePriority.begin(), it));
-			};
-
-		auto IsAllowedBySlotPriorityLimit = [&](const SlotDefinition& slotDef, const ActiveItem* item) -> bool {
-			if (slotDef.formTypePriority.empty() || slotDef.formTypePriorityLimit <= 0) return true;
-			if (slotDef.formTypePriorityAccountForEquipped && item && item->isEquipped) return true;
-			return GetSlotFormTypeRank(slotDef, item) < slotDef.formTypePriorityLimit;
-			};
-
-		auto BuildSlotFallbackCandidates = [&](const SlotDefinition& slotDef) {
-			std::vector<ActiveItem*> ordered;
-			ordered.reserve(candidateItems.size());
-			for (auto& ai : candidateItems) {
-				ordered.push_back(&ai);
-			}
-			if (!slotDef.formTypePriority.empty()) {
-				std::stable_sort(ordered.begin(), ordered.end(), [&](const ActiveItem* lhs, const ActiveItem* rhs) {
-					if (!lhs || !rhs) return lhs != nullptr;
-					if (slotDef.formTypePriorityAccountForEquipped && lhs->isEquipped != rhs->isEquipped) return lhs->isEquipped > rhs->isEquipped;
-					const auto lhsRank = GetSlotFormTypeRank(slotDef, lhs);
-					const auto rhsRank = GetSlotFormTypeRank(slotDef, rhs);
-					return lhsRank < rhsRank;
-				});
-			}
-			return ordered;
-			};
-
-		auto BuildSlotModeCandidates = [&](const SlotDefinition& slotDef, const std::vector<ActiveItem*>& fallbackCandidates) {
-			auto ordered = fallbackCandidates;
-			if (slotDef.selectionMode == SlotSelectionMode::kStrongest) {
-				std::stable_sort(ordered.begin(), ordered.end(), [](const ActiveItem* lhs, const ActiveItem* rhs) {
-					if (!lhs || !rhs) return lhs != nullptr;
-					return lhs->rating > rhs->rating;
-					});
-			}
-			else if (slotDef.selectionMode == SlotSelectionMode::kRandom) {
-				std::stable_sort(ordered.begin(), ordered.end(), [&](const ActiveItem* lhs, const ActiveItem* rhs) {
-					if (!lhs || !rhs) return lhs != nullptr;
-					auto hashItem = [&](const ActiveItem* item) {
-						std::uint64_t seed = static_cast<std::uint64_t>(actorID) << 32;
-						seed ^= static_cast<std::uint64_t>(std::hash<std::string>{}(slotDef.slotName));
-						seed ^= static_cast<std::uint64_t>(item->object ? item->object->GetFormID() : 0);
-						return seed ^ (item->uid * 0x9E3779B97F4A7C15ull);
-					};
-					return hashItem(lhs) < hashItem(rhs);
-					});
-			}
-			return ordered;
 			};
 
 		// Keep configured slot priority intact. IED does not remap ordinary slots
@@ -2223,7 +2089,7 @@
 					}
 				}
 				if (chosenAmmoSource) {
-					finalAssignments[slotDef.slotName] = { chosenAmmoSource, nullptr, false, AssignmentSource::kDedicatedAmmo };
+					finalAssignments.TryAdd(slotDef.slotName, { chosenAmmoSource, nullptr, false, AssignmentSource::kDedicatedAmmo });
 				}
 			}
 		}
@@ -2325,7 +2191,7 @@
 				return false;
 			}
 			for (const auto& slotName : cd.lastEquippedDisplaySlots) {
-				if (finalAssignments.count(slotName) != 0) {
+				if (finalAssignments.Contains(slotName)) {
 					return true;
 				}
 			}
@@ -2524,7 +2390,7 @@
 
 			std::vector<ActiveItem*> candidates;
 			for (const auto& slotName : slotNames) {
-				if (cd.lastEquippedSkipOccupiedDisplaySlots && finalAssignments.count(slotName) != 0) {
+				if (cd.lastEquippedSkipOccupiedDisplaySlots && finalAssignments.Contains(slotName)) {
 					continue;
 				}
 				auto stateIt = sStates.find(slotName);
@@ -2545,14 +2411,6 @@
 				}
 			}
 			return candidates;
-			};
-
-		auto CountAssignmentsForCustom = [&](const CustomDefinition* cd) -> std::size_t {
-			std::size_t count = 0;
-			for (const auto& [slotName, assignment] : finalAssignments) {
-				if (assignment.custom == cd) ++count;
-			}
-			return count;
 			};
 
 		auto AssignCustomCandidates = [&](CustomDefinition& cd, std::vector<ActiveItem*>& candidates, bool allowConfiguredSlotFallback = false) {
@@ -2597,24 +2455,24 @@
 				if (HasBlockedLastEquippedBipedSlot(cd)) continue;
 
 				auto candidates = BuildCustomCandidates(cd, a_lastEquippedMode, false);
-				const auto before = CountAssignmentsForCustom(&cd);
+				const auto before = finalAssignments.CountForCustom(&cd);
 				AssignCustomCandidates(cd, candidates);
 
 				if (a_lastEquippedMode &&
 					cd.lastEquippedFallbackToSlotted &&
-					CountAssignmentsForCustom(&cd) == before) {
+					finalAssignments.CountForCustom(&cd) == before) {
 					auto slottedCandidates = BuildSlottedFallbackCandidates(cd);
 					AssignCustomCandidates(cd, slottedCandidates, true);
 				}
 
 				if (a_lastEquippedMode &&
 					cd.lastEquippedFallbackToRecentAcquired &&
-					CountAssignmentsForCustom(&cd) == before) {
+					finalAssignments.CountForCustom(&cd) == before) {
 					auto acquiredCandidates = BuildCustomCandidates(cd, true, true);
 					AssignCustomCandidates(cd, acquiredCandidates);
 				}
 
-				if (a_lastEquippedMode && CountAssignmentsForCustom(&cd) == before) {
+				if (a_lastEquippedMode && finalAssignments.CountForCustom(&cd) == before) {
 					// Match IED's Last Equipped behavior: when no runtime history exists
 					// (for example, immediately after loading a save), fall back to the
 					// Custom's normal target selection instead of yielding to a generic slot.
@@ -2627,91 +2485,36 @@
 			AssignCustomsByMode(false);
 
 		auto TryAssignBestCandidateToSlot = [&](SlotDefinition& slotDef, bool equippedOnly) -> bool {
-			if (finalAssignments.count(slotDef.slotName)) return false;
+			if (finalAssignments.Contains(slotDef.slotName)) return false;
 			if (!slotDef.isEnabled) return false;
 
-			auto fallbackCandidates = BuildSlotFallbackCandidates(slotDef);
-			auto modeCandidates = BuildSlotModeCandidates(slotDef, fallbackCandidates);
-			auto IsCandidateEligible = [&](ActiveItem* ai, bool applyPriorityLimit) {
-				if (!ai || (ai->count <= 0 && !slotDef.extractMagazine)) return false;
-				if (equippedOnly && (!ai->isEquipped || equippedConsumed[ai])) return false;
-				if (applyPriorityLimit && !IsAllowedBySlotPriorityLimit(slotDef, ai)) return false;
-				return CheckSlotFilters(slotDef, ai) && !CheckBlackHole(slotDef, ai, nullptr);
-				};
-			auto IsPreferredCandidateEligible = [&](ActiveItem* ai) {
-				if (!ai || (ai->count <= 0 && !slotDef.extractMagazine)) return false;
-				if (equippedOnly && (!ai->isEquipped || equippedConsumed[ai])) return false;
-				if (slotDef.checkCannotWear && ConditionEvaluator::CheckCannotWear(a_actor, ai->object)) return false;
-				return !CheckBlackHole(slotDef, ai, nullptr);
-				};
+			auto fallbackCandidates = AssignmentResolver::BuildSlotFallbackCandidates(slotDef, candidateItems);
+			auto modeCandidates = AssignmentResolver::BuildSlotModeCandidates(slotDef, fallbackCandidates, actorID);
 			auto CommitAssignment = [&](ActiveItem* item, AssignmentSource source) {
 				bool isEqInst = false;
 				if (!slotDef.extractMagazine && item->isEquipped && !equippedConsumed[item]) {
 					isEqInst = true;
 					equippedConsumed[item] = true;
 				}
-				finalAssignments[slotDef.slotName] = { item, nullptr, isEqInst, source };
+				finalAssignments.TryAdd(slotDef.slotName, { item, nullptr, isEqInst, source });
 				if (!slotDef.extractMagazine) item->count--;
-				};
-
-			// Match IED: preferred item order is explicit configuration order, not
-			// inventory enumeration order or an incidental rating sort.
-			for (const auto preferredFormID : slotDef.preferredItems) {
-				auto it = std::find_if(fallbackCandidates.begin(), fallbackCandidates.end(), [&](ActiveItem* ai) {
-					return ai && ai->object && ai->object->GetFormID() == preferredFormID && IsPreferredCandidateEligible(ai);
-					});
-				if (it != fallbackCandidates.end()) {
-					CommitAssignment(*it, AssignmentSource::kPreferredItem);
-					return true;
-				}
-			}
-
-			if (slotDef.selectionMode == SlotSelectionMode::kStrongest) {
-				for (auto* ai : modeCandidates) {
-					if (IsCandidateEligible(ai, true)) {
-						CommitAssignment(ai, AssignmentSource::kStrongest);
-						return true;
-					}
-				}
-			}
-			else if (slotDef.selectionMode == SlotSelectionMode::kRandom) {
-				for (auto* ai : modeCandidates) {
-					if (IsCandidateEligible(ai, true)) {
-						CommitAssignment(ai, AssignmentSource::kRandom);
-						return true;
-					}
-				}
-			}
-			else {
-				// IED's default pass is the most recently equipped eligible item for
-				// this slot. The FO4 event cache tracks concrete inventory stacks by UID.
-				ActiveItem* lastEquippedMatch = nullptr;
-				std::uint64_t lastEquippedScore = 0;
-				for (auto* ai : fallbackCandidates) {
-					if (!IsCandidateEligible(ai, true)) continue;
-					const auto score = GetRecentEquipScore(actorID, ai->uid);
-					if (score > lastEquippedScore) {
-						lastEquippedMatch = ai;
-						lastEquippedScore = score;
-					}
-				}
-				if (lastEquippedMatch) {
-					CommitAssignment(lastEquippedMatch, AssignmentSource::kLastEquipped);
-					return true;
-				}
-			}
-
-			// Final IED pass: take the first candidate in configured slot/type order
-			// that satisfies the slot's filters.
-			for (auto* ai : fallbackCandidates) {
-				if (IsCandidateEligible(ai, true)) {
-					CommitAssignment(ai, AssignmentSource::kSlotPriority);
-					return true;
-				}
-			}
-			return false;
-
 			};
+		const auto eligibilityContext = MakeSlotEligibilityContext(slotDef, equippedOnly, false, true);
+
+		const AssignmentResolver::SlotAssignmentContext resolutionContext{
+			slotDef,
+			fallbackCandidates,
+			modeCandidates,
+			eligibilityContext,
+			[&](ActiveItem* item) { return GetRecentEquipScore(actorID, item ? item->uid : 0); }
+		};
+		if (const auto decision = AssignmentResolver::ResolveSlotAssignment(resolutionContext)) {
+			CommitAssignment(decision->item, decision->source);
+			return true;
+		}
+		return false;
+
+		};
 
 			// A Last Equipped custom is an explicit display rule.  Resolve it before
 			// ordinary slots reserve the currently equipped instance, otherwise a
@@ -2732,16 +2535,15 @@
 			auto& sDef = scoped.data;
 			auto& sState = sStates[sDef.slotName];
 
-			if (finalAssignments.count(sDef.slotName)) {
-				auto& assignment = finalAssignments[sDef.slotName];
-				ActiveItem* winner = assignment.item;
-				CustomDefinition* winnerCustom = assignment.custom;
+			if (const auto* assignment = finalAssignments.Find(sDef.slotName)) {
+				ActiveItem* winner = assignment->item;
+				CustomDefinition* winnerCustom = assignment->custom;
 				const auto previousFormID = sState.lastItem ? sState.lastItem->GetFormID() : 0;
 				const auto winnerFormID = winner && winner->object ? winner->object->GetFormID() : 0;
 				const auto previousEquipped = sState.isEquipped;
 
 				sState.lastItem = winner->object;
-				sState.isEquipped = assignment.isEquippedInstance;
+				sState.isEquipped = assignment->isEquippedInstance;
 
 				if (isPlayer && (previousFormID != winnerFormID || previousEquipped != sState.isEquipped)) {
 					REX::INFO(
@@ -2752,7 +2554,7 @@
 						previousEquipped,
 						sState.isEquipped,
 						winner ? winner->uid : 0,
-						AssignmentSourceName(assignment.source));
+						AssignmentSourceName(assignment->source));
 					if (winnerCustom) {
 						const char* selectionMode = winnerCustom->lastEquippedMode ? "last-equipped" :
 							winnerCustom->selectInventoryStrongest ? "strongest" :
@@ -2780,12 +2582,7 @@
 
 				bool isCustomNode = (rawFinalCME.find("Node_") != std::string::npos || rawFinalCME.find("IAD_") != std::string::npos);
 				if (isCustomNode && !HasNodeStateForName(rawFinalCME)) {
-					Safe_Abandon_Slot(sState.currentModels);
-					Safe_Abandon_Slot(sState.currentHolsters);
-					Safe_Abandon_Slot(sState.currentModelGroups);
-					Safe_Abandon_Slot(sState.oldModels);
-					Safe_Abandon_Slot(sState.oldHolsters);
-					Safe_Abandon_Slot(sState.oldModelGroups);
+					ActorDisplayLifecycle::ClearSlotModels(sState);
 					sState.lastItem = nullptr;
 					sState.currentUID = 0;
 					sState.lastModelRequestSignature.clear();
@@ -3074,12 +2871,7 @@
 				std::string currentModelGroupSignature = BuildModelGroupSignature(activeModelGroups);
 
 				if (cleanCME != sState.lastTargetNode) {
-					Safe_Abandon_Slot(sState.currentModels);
-					Safe_Abandon_Slot(sState.currentHolsters);
-					Safe_Abandon_Slot(sState.currentModelGroups);
-					Safe_Abandon_Slot(sState.oldModels);
-					Safe_Abandon_Slot(sState.oldHolsters);
-					Safe_Abandon_Slot(sState.oldModelGroups);
+					ActorDisplayLifecycle::ClearSlotModels(sState);
 					sState.lastTargetNode = cleanCME;
 					sState.lastModelRequestSignature.clear();
 					sState.lastModelGroupSignature.clear();
@@ -3104,33 +2896,28 @@
 
 				const bool uidChanged = sState.currentUID != newUID;
 				const bool modelRequestChanged = sState.lastModelRequestSignature != currentModelRequestSignature;
+				const bool holsterPathChanged = sState.lastHolsterPath != currentHolsterPath;
+				const bool modelGroupChanged = sState.lastModelGroupSignature != currentModelGroupSignature;
+				if (uidChanged || modelRequestChanged || holsterPathChanged || modelGroupChanged) {
+					++sState.displayRequestGeneration;
+				}
 				if (uidChanged || modelRequestChanged) {
 					// Do not detach a just-rendered node in the same weapon-switch window.
 					// Motion Vector Fixes (and similar scene visitors) can still be walking
 					// the old subtree on a render job.  Cull it now so it cannot ghost, then
 					// retire it from the main update after the traversal grace period.
-					for (auto& model : sState.currentModels) {
-						if (model) {
-							model->SetAppCulled(true);
-							sState.oldModels.push_back(model);
-						}
-					}
-					sState.currentModels.clear();
-					sState.oldModelsRetireAfterTick = _currentUpdateTick + 60;
+					ActorDisplayLifecycle::BeginModelReplacement(sState, _currentUpdateTick);
 					sState.currentUID = newUID;
 					sState.lastModelRequestSignature = currentModelRequestSignature;
 				}
 
-				if (sState.lastHolsterPath != currentHolsterPath) {
-					for (auto& h : sState.currentHolsters) if (h) sState.oldHolsters.push_back(h);
-					sState.currentHolsters.clear();
+				if (holsterPathChanged) {
+					ActorDisplayLifecycle::BeginHolsterReplacement(sState, _currentUpdateTick);
 					sState.lastHolsterPath = currentHolsterPath;
 				}
 
-				if (uidChanged || sState.lastModelGroupSignature != currentModelGroupSignature) {
-					Safe_Abandon_Slot(sState.currentModelGroups);
-					Safe_Abandon_Slot(sState.oldModelGroups);
-					sState.currentModelGroups.clear();
+				if (uidChanged || modelGroupChanged) {
+					ActorDisplayLifecycle::BeginModelGroupReplacement(sState, _currentUpdateTick);
 					sState.lastModelGroupSignature = currentModelGroupSignature;
 				}
 				sState.modelGroupTransforms.clear();
@@ -3188,7 +2975,7 @@
 
 				for (size_t i = sState.currentModels.size(); i < (size_t)numToSpawn; ++i) {
 					sState.currentModels.push_back(nullptr);
-					auto callback = [actorID, exactSlotKey = sDef.slotName, cleanMovName = FormatMOVName(sDef.slotName), index = i, reqUID = newUID, reqModelSignature = currentModelRequestSignature, reqAnimation = effectiveAnimation, reqEffect = effectiveEffect, reqLight = effectiveLight, reqInvisible = effectiveInvisible, reqHideGeometry = effectiveHideGeometry, sceneGeneration = ModelManager::GetSceneGeneration()](RE::NiAVObject* loaded) {
+					auto callback = [actorID, exactSlotKey = sDef.slotName, cleanMovName = FormatMOVName(sDef.slotName), index = i, reqUID = newUID, reqGeneration = sState.displayRequestGeneration, reqModelSignature = currentModelRequestSignature, reqAnimation = effectiveAnimation, reqEffect = effectiveEffect, reqLight = effectiveLight, reqInvisible = effectiveInvisible, reqHideGeometry = effectiveHideGeometry, sceneGeneration = ModelManager::GetSceneGeneration()](RE::NiAVObject* loaded) {
 						if (!loaded) {
 							REX::WARN("[IAD 追踪] 模型回调收到 nullptr，停止无限重试。插槽: {}", exactSlotKey);
 							return;
@@ -3197,7 +2984,7 @@
 
 						auto task = F4SE::GetTaskInterface();
 						if (task) {
-							task->AddTask([actorID, exactSlotKey, cleanMovName, index, safeLoaded, reqUID, reqModelSignature, reqAnimation, reqEffect, reqLight, reqInvisible, reqHideGeometry, sceneGeneration]() {
+							task->AddTask([actorID, exactSlotKey, cleanMovName, index, safeLoaded, reqUID, reqGeneration, reqModelSignature, reqAnimation, reqEffect, reqLight, reqInvisible, reqHideGeometry, sceneGeneration]() {
 							if (ModelManager::GetSceneGeneration() != sceneGeneration || ModelManager::IsGameLoading() || ModelManager::IsMainMenuTransition()) return;
 							auto hm = HolsterManager::GetSingleton();
 							std::lock_guard<std::mutex> evalLock(hm->_evalMutex);
@@ -3205,6 +2992,7 @@
 								if (it != hm->_actorDisplaySlots.end() && it->second.count(exactSlotKey)) {
 									auto& state = it->second[exactSlotKey];
 
+									if (state.displayRequestGeneration != reqGeneration) return;
 									if (state.currentUID != reqUID) return;
 									if (state.lastModelRequestSignature != reqModelSignature) return;
 
@@ -3223,9 +3011,10 @@
 										safeLoaded->local.scale = state.meshTransform.scale;
 						ApplyGeometryTransform(safeLoaded.get(), state.overrideGeometryTransform, state.geometryTransform);
 
-						bool shouldShowWp = !ShouldHideWeaponDisplay(act, state) && (index < static_cast<size_t>(state.numModelsToSpawn));
-						if (!shouldShowWp) safeLoaded->SetAppCulled(true);
-										else safeLoaded->SetAppCulled(false);
+										// Visibility belongs to UpdateActorTransforms. Keeping a freshly
+										// loaded clone culled prevents a callback that lands between
+										// weapon-state samples from producing a one-frame flash.
+										safeLoaded->SetAppCulled(true);
 
 										state.currentModels[index] = safeLoaded;
 
@@ -3272,7 +3061,7 @@
 				for (size_t i = sState.currentHolsters.size(); i < (size_t)numToSpawn; ++i) {
 					sState.currentHolsters.push_back(nullptr);
 					if (!currentHolsterPath.empty()) {
-						auto hCallback = [actorID, exactSlotKey = sDef.slotName, cleanMovName = FormatMOVName(sDef.slotName), index = i, reqPath = currentHolsterPath, sceneGeneration = ModelManager::GetSceneGeneration()](RE::NiAVObject* loaded) {
+						auto hCallback = [actorID, exactSlotKey = sDef.slotName, cleanMovName = FormatMOVName(sDef.slotName), index = i, reqPath = currentHolsterPath, reqUID = newUID, reqGeneration = sState.displayRequestGeneration, sceneGeneration = ModelManager::GetSceneGeneration()](RE::NiAVObject* loaded) {
 							if (!loaded) {
 								REX::WARN("[IAD 追踪] 枪套回调收到 nullptr。插槽: {}", exactSlotKey);
 								return;
@@ -3280,7 +3069,8 @@
 							RE::NiPointer<RE::NiAVObject> safeLoaded(loaded);
 
 							auto task = F4SE::GetTaskInterface();
-							if (task) {								task->AddTask([actorID, exactSlotKey, cleanMovName, index, safeLoaded, reqPath, sceneGeneration]() {
+							if (task) {
+								task->AddTask([actorID, exactSlotKey, cleanMovName, index, safeLoaded, reqPath, reqUID, reqGeneration, sceneGeneration]() {
 								if (ModelManager::GetSceneGeneration() != sceneGeneration || ModelManager::IsGameLoading() || ModelManager::IsMainMenuTransition()) return;
 								auto hm = HolsterManager::GetSingleton();
 								std::lock_guard<std::mutex> evalLock(hm->_evalMutex);
@@ -3288,9 +3078,9 @@
 								if (it != hm->_actorDisplaySlots.end() && it->second.count(exactSlotKey)) {
 									auto& state = it->second[exactSlotKey];
 
+									if (state.displayRequestGeneration != reqGeneration) return;
+									if (state.currentUID != reqUID) return;
 									if (state.lastHolsterPath != reqPath) return;
-
-									Safe_Abandon_Slot(state.oldHolsters);
 
 									if (index < state.currentHolsters.size()) {
 										auto act = RE::TESForm::GetFormByID<RE::Actor>(actorID);
@@ -3306,9 +3096,7 @@
 										safeLoaded->local.rotate = mRot;
 										safeLoaded->local.scale = state.holsterMeshTransform.scale;
 
-										bool shouldShowH = !ShouldHideHolsterDisplay(act, state) && (index < static_cast<size_t>(state.numModelsToSpawn));
-										if (!shouldShowH) safeLoaded->SetAppCulled(true);
-										else safeLoaded->SetAppCulled(false);
+										safeLoaded->SetAppCulled(true);
 
 										state.currentHolsters[index] = safeLoaded;
 
@@ -3340,7 +3128,7 @@
 					groupCleanupPolicy.removeLights = !activeModelGroups[i].light.enabled;
 					groupCleanupPolicy.keepTorchFlame = activeModelGroups[i].keepTorchFlame;
 					const auto groupMovName = activeModelGroups[i].movName;
-					auto gCallback = [actorID, exactSlotKey = sDef.slotName, groupMovName, index = i, reqSignature = currentModelGroupSignature, reqUID = newUID, sceneGeneration = ModelManager::GetSceneGeneration()](RE::NiAVObject* loaded) {
+					auto gCallback = [actorID, exactSlotKey = sDef.slotName, groupMovName, index = i, reqSignature = currentModelGroupSignature, reqUID = newUID, reqGeneration = sState.displayRequestGeneration, sceneGeneration = ModelManager::GetSceneGeneration()](RE::NiAVObject* loaded) {
 						if (!loaded) {
 							REX::WARN("[IAD 追踪] 模型组回调收到 nullptr。插槽: {}", exactSlotKey);
 							return;
@@ -3349,7 +3137,7 @@
 
 						auto task = F4SE::GetTaskInterface();
 						if (task) {
-							task->AddTask([actorID, exactSlotKey, groupMovName, index, safeLoaded, reqSignature, reqUID, sceneGeneration]() {
+							task->AddTask([actorID, exactSlotKey, groupMovName, index, safeLoaded, reqSignature, reqUID, reqGeneration, sceneGeneration]() {
 							if (ModelManager::GetSceneGeneration() != sceneGeneration || ModelManager::IsGameLoading() || ModelManager::IsMainMenuTransition()) return;
 							auto hm = HolsterManager::GetSingleton();
 								std::lock_guard<std::mutex> evalLock(hm->_evalMutex);
@@ -3357,9 +3145,8 @@
 								if (it != hm->_actorDisplaySlots.end() && it->second.count(exactSlotKey)) {
 									auto& state = it->second[exactSlotKey];
 
+									if (state.displayRequestGeneration != reqGeneration) return;
 									if (state.lastModelGroupSignature != reqSignature || state.currentUID != reqUID) return;
-
-									Safe_Abandon_Slot(state.oldModelGroups);
 
 									if (index < state.currentModelGroups.size() && index < state.modelGroupTransforms.size()) {
 										safeLoaded->name = "IAD_ModelGroup_Wrapper";
@@ -3378,10 +3165,7 @@
 											ApplyGeometryTransform(safeLoaded.get(), overrideGeometry, state.modelGroupGeometryTransforms[index]);
 										}
 
-										bool hideWithWeapon = index < state.modelGroupHideWithWeapon.size() ? state.modelGroupHideWithWeapon[index] : true;
-										bool conditionVisible = index < state.modelGroupConditionVisible.size() ? state.modelGroupConditionVisible[index] : true;
 										auto act = RE::TESForm::GetFormByID<RE::Actor>(actorID);
-										bool shouldShow = conditionVisible && (hideWithWeapon ? !ShouldHideWeaponDisplay(act, state) : !state.isSlotHidden);
 										if (index < state.modelGroupEffects.size()) {
 											ModelManager::GetSingleton()->ApplyModelEffect(safeLoaded.get(), state.modelGroupEffects[index]);
 										}
@@ -3394,7 +3178,7 @@
 										if (index < state.modelGroupHideGeometry.size() && state.modelGroupHideGeometry[index]) {
 											ModelManager::GetSingleton()->SetModelGeometryHidden(safeLoaded.get(), true);
 										}
-										safeLoaded->SetAppCulled(!shouldShow);
+										safeLoaded->SetAppCulled(true);
 
 										state.currentModelGroups[index] = safeLoaded;
 
@@ -3507,12 +3291,7 @@
 				sState.isHolsterHidden = isBaseHidden || (isWeaponDrawnHide && !sState.keepHolsterWhenDrawn);
 			}
 			else {
-				Safe_Abandon_Slot(sState.currentModels);
-				Safe_Abandon_Slot(sState.currentHolsters);
-				Safe_Abandon_Slot(sState.currentModelGroups);
-				Safe_Abandon_Slot(sState.oldModels);
-				Safe_Abandon_Slot(sState.oldHolsters);
-				Safe_Abandon_Slot(sState.oldModelGroups);
+				ActorDisplayLifecycle::ClearSlotModels(sState);
 				sState.lastItem = nullptr;
 				sState.currentUID = 0;
 				sState.hideWeaponWhenDrawn = false;
@@ -3563,9 +3342,129 @@
 		}
 	}
 
+	void HolsterManager::CollectModelBoundSpheres(RE::Actor* a_actor, std::vector<DebugBoundSphere>& outSpheres)
+	{
+		if (!a_actor) return;
+		std::lock_guard<std::mutex> evalLock(_evalMutex);
+		auto slotsIt = _actorDisplaySlots.find(a_actor->GetFormID());
+		if (slotsIt == _actorDisplaySlots.end()) return;
+
+		// This is intentionally a read-only scene snapshot. Calling
+		// UpdateWorldBound() here can mutate the scene graph while the UI is
+		// consuming the previous snapshot and was also the source of detached
+		// debug bounds on some model wrappers.
+		constexpr std::size_t kMaxContourVertices = 384;
+		std::function<void(RE::NiAVObject*, DebugBoundSphere&, bool&, RE::NiPoint3&, float&)> collectModelData;
+		collectModelData = [&](RE::NiAVObject* a_object, DebugBoundSphere& a_snapshot, bool& a_hasFallback, RE::NiPoint3& a_fallbackCenter, float& a_fallbackRadius) {
+			if (!a_object || a_object->GetAppCulled()) return;
+
+			const auto& bound = a_object->worldBound;
+			if (!a_hasFallback && std::isfinite(bound.fRadius) && bound.fRadius > 0.01f &&
+				std::isfinite(bound.center.x) && std::isfinite(bound.center.y) && std::isfinite(bound.center.z)) {
+				a_hasFallback = true;
+				a_fallbackCenter = bound.center;
+				a_fallbackRadius = bound.fRadius;
+			}
+
+			if (auto* shape = a_object->IsTriShape(); shape && a_snapshot.worldVertices && a_snapshot.worldVertices->size() < kMaxContourVertices) {
+				auto* renderShape = static_cast<RE::BSGraphics::TriShape*>(shape->rendererData);
+				if (renderShape && renderShape->vertexBuffer && renderShape->vertexBuffer->data) {
+					// FO4 stores position attributes as packed half floats for the
+					// regular game vertex formats. Decode the six-byte position locally
+					// so contour sampling never calls an engine relocation.
+					const std::size_t stride = shape->vertexDesc.GetSize();
+					const std::size_t vertexCount = shape->numVertices;
+					const std::size_t dataSize = renderShape->vertexBuffer->dataSize;
+					const std::size_t positionOffset = shape->vertexDesc.GetAttributeOffset(RE::BSGraphics::Vertex::VA_POSITION);
+					const bool validLayout = stride >= 6 && positionOffset <= stride - 6 && vertexCount > 0 &&
+						vertexCount <= 65535 && dataSize >= vertexCount * stride;
+					if (validLayout) {
+						const auto* bytes = static_cast<const std::uint8_t*>(renderShape->vertexBuffer->data);
+						const std::size_t remaining = kMaxContourVertices - a_snapshot.worldVertices->size();
+						const std::size_t step = std::max<std::size_t>(1, (vertexCount + remaining - 1) / remaining);
+						for (std::size_t index = 0; index < vertexCount && a_snapshot.worldVertices->size() < kMaxContourVertices; index += step) {
+							RE::NiPoint3 localPoint{ 0.0f, 0.0f, 0.0f };
+							if (!ReadPackedPosition(bytes, dataSize, stride, positionOffset, index, localPoint)) continue;
+
+							const RE::NiPoint3 scaledPoint{
+								localPoint.x * a_object->world.scale,
+								localPoint.y * a_object->world.scale,
+								localPoint.z * a_object->world.scale
+							};
+							RE::NiPoint3 worldPoint = TransformMath::Multiply(a_object->world.rotate, scaledPoint);
+							worldPoint = TransformMath::Add(worldPoint, a_object->world.translate);
+							if (std::isfinite(worldPoint.x) && std::isfinite(worldPoint.y) && std::isfinite(worldPoint.z)) {
+								a_snapshot.worldVertices->push_back(worldPoint);
+							}
+						}
+					}
+				}
+			}
+
+			if (auto* node = a_object->IsNode()) {
+				for (const auto& child : node->children) {
+					collectModelData(child.get(), a_snapshot, a_hasFallback, a_fallbackCenter, a_fallbackRadius);
+				}
+			}
+		};
+
+		std::function<void(RE::NiAVObject*, const std::string&, bool)> appendModel;
+		appendModel = [&](RE::NiAVObject* a_model, const std::string& a_slotName, bool a_isHolster) {
+			if (!a_model || a_model->GetAppCulled()) return;
+			DebugBoundSphere snapshot;
+			snapshot.worldVertices = std::make_shared<std::vector<RE::NiPoint3>>();
+			snapshot.meshName = a_model->name.c_str();
+			snapshot.slotName = a_slotName;
+			snapshot.isHolster = a_isHolster;
+			bool hasFallback = false;
+			RE::NiPoint3 fallbackCenter{ 0.0f, 0.0f, 0.0f };
+			float fallbackRadius = 0.0f;
+			collectModelData(a_model, snapshot, hasFallback, fallbackCenter, fallbackRadius);
+
+			if (snapshot.worldVertices && !snapshot.worldVertices->empty()) {
+				RE::NiPoint3 minPoint = snapshot.worldVertices->front();
+				RE::NiPoint3 maxPoint = minPoint;
+				for (const auto& point : *snapshot.worldVertices) {
+					minPoint.x = std::min(minPoint.x, point.x);
+					minPoint.y = std::min(minPoint.y, point.y);
+					minPoint.z = std::min(minPoint.z, point.z);
+					maxPoint.x = std::max(maxPoint.x, point.x);
+					maxPoint.y = std::max(maxPoint.y, point.y);
+					maxPoint.z = std::max(maxPoint.z, point.z);
+					}
+				snapshot.worldCenter = (minPoint + maxPoint) * 0.5f;
+				snapshot.worldRadius = 0.0f;
+				for (const auto& point : *snapshot.worldVertices) {
+					const auto delta = point - snapshot.worldCenter;
+					snapshot.worldRadius = std::max(snapshot.worldRadius, std::sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z));
+				}
+				snapshot.hasGeometryContour = true;
+			}
+			else if (hasFallback) {
+				snapshot.worldCenter = fallbackCenter;
+				snapshot.worldRadius = fallbackRadius;
+			}
+
+			if (snapshot.worldRadius > 0.01f && std::isfinite(snapshot.worldRadius)) {
+				outSpheres.push_back(std::move(snapshot));
+			}
+		};
+
+		for (const auto& [slotName, state] : slotsIt->second) {
+			for (const auto& model : state.currentModels) appendModel(model.get(), slotName, false);
+			for (const auto& model : state.currentHolsters) appendModel(model.get(), slotName, true);
+			for (const auto& model : state.currentModelGroups) appendModel(model.get(), slotName, false);
+		}
+	}
+
 	void HolsterManager::UpdateActorTransforms(RE::Actor* a_actor, std::vector<DebugBox>& newBoxes, std::vector<DebugNode>& newNodes) {
 		std::lock_guard<std::mutex> evalLock(_evalMutex); // 🌟 多线程防爆锁：确保读取时没人正在修改数据！
 		if (!a_actor || ModelManager::IsMainMenuTransition()) return;
+		DebugSettings debugSettingsSnapshot;
+		{
+			std::lock_guard<std::mutex> settingsLock(debugSettingsMutex);
+			debugSettingsSnapshot = debugSettings;
+		}
 
 		RE::TESFormID actorID = a_actor->GetFormID();
 		auto nodeStatesIt = _actorNodeStates.find(actorID);
@@ -3601,15 +3500,11 @@
 			if ((sState.currentModels.empty() && sState.currentHolsters.empty() && sState.currentModelGroups.empty() &&
 				sState.oldModels.empty() && sState.oldHolsters.empty() && sState.oldModelGroups.empty()) || sState.lastTargetNode.empty()) continue;
 
+			ActorDisplayLifecycle::RetireDeferredModels(sState, _currentUpdateTick);
+
 			auto movManaged = NodeManager::GetManagedNode(a_actor, FormatMOVName(slotName));
 			if (!movManaged || !movManaged->node) continue;
 			auto* movNode = movManaged->node;
-
-			if (!sState.oldModels.empty() && sState.oldModelsRetireAfterTick != 0 && _currentUpdateTick >= sState.oldModelsRetireAfterTick) {
-				REX::TRACE("[IAD Lifecycle] retiring {} deferred model(s) for actor {:08X}, slot='{}'", sState.oldModels.size(), actorID, slotName);
-				Safe_Abandon_Slot(sState.oldModels);
-				sState.oldModelsRetireAfterTick = 0;
-			}
 
 			RE::NiTransform baseLocal;
 			baseLocal.MakeIdentity();
@@ -3640,7 +3535,7 @@
 			// parent transform. Do not integrate display sway against that transient
 			// space; keep the MOV at its configured local transform until it ends.
 			const bool suspendPhysicsForFurniture = IsActorUsingFurnitureForDisplayHide(a_actor);
-			if (!suppressDisplays && runtimeSettings.enableEquipmentPhysics && !suspendPhysicsForFurniture && activePhysPtr && !activePhysPtr->disabled && movNode->parent) {
+			if (!sState.previewTransformActive && !suppressDisplays && runtimeSettings.enableEquipmentPhysics && !suspendPhysicsForFurniture && activePhysPtr && !activePhysPtr->disabled && movNode->parent) {
 				float dt = (sState.lastUpdateTime != 0) ? (nowTime - sState.lastUpdateTime) / 1000000.0f : 0.016f;
 				dt = std::clamp(dt, 0.001f, 0.1f);
 				if (!sState.physicsSim) {
@@ -3673,13 +3568,13 @@
 			}
 			sState.lastUpdateTime = nowTime;
 
-			auto ApplyTransforms = [&](std::vector<RE::NiPointer<RE::NiAVObject>>& modelArray, TransformData& tData, bool isHidden) {
+			auto ApplyTransforms = [&](std::vector<RE::NiPointer<RE::NiAVObject>>& modelArray, TransformData& tData, bool isHidden, std::size_t activeCount) {
 				for (size_t i = 0; i < modelArray.size(); ++i) {
 					auto& model = modelArray[i];
 					if (!model) continue;
 
 					// 恢复原本完美的逻辑
-					bool shouldShow = !suppressDisplays && !isHidden;
+					bool shouldShow = !suppressDisplays && !isHidden && i < activeCount;
 					ApplyGeometryTransform(model.get(), sState.overrideGeometryTransform, sState.geometryTransform);
 
 					if (shouldShow) {
@@ -3703,12 +3598,13 @@
 			// async model callbacks can straddle the engine's draw/sheath transition.
 			const bool weaponHiddenNow = ShouldHideWeaponDisplay(a_actor, sState);
 			const bool holsterHiddenNow = ShouldHideHolsterDisplay(a_actor, sState);
-			ApplyTransforms(sState.currentModels, sState.meshTransform, weaponHiddenNow);
-			ApplyTransforms(sState.oldModels, sState.meshTransform, true);
-			ApplyTransforms(sState.currentHolsters, sState.holsterMeshTransform, holsterHiddenNow);
-			ApplyTransforms(sState.oldHolsters, sState.holsterMeshTransform, holsterHiddenNow);
+			const auto activeModelCount = sState.numModelsToSpawn > 0 ? static_cast<std::size_t>(sState.numModelsToSpawn) : 0;
+			ApplyTransforms(sState.currentModels, sState.meshTransform, weaponHiddenNow, activeModelCount);
+			ApplyTransforms(sState.oldModels, sState.meshTransform, true, 0);
+			ApplyTransforms(sState.currentHolsters, sState.holsterMeshTransform, holsterHiddenNow, activeModelCount);
+			ApplyTransforms(sState.oldHolsters, sState.holsterMeshTransform, true, 0);
 
-			auto ApplyModelGroupTransforms = [&](std::vector<RE::NiPointer<RE::NiAVObject>>& modelArray) {
+			auto ApplyModelGroupTransforms = [&](std::vector<RE::NiPointer<RE::NiAVObject>>& modelArray, bool allowVisible) {
 				for (size_t i = 0; i < modelArray.size(); ++i) {
 					auto& model = modelArray[i];
 					if (!model) continue;
@@ -3717,7 +3613,7 @@
 					if (i < sState.modelGroupTransforms.size()) tData = sState.modelGroupTransforms[i];
 					bool hideWithWeapon = i < sState.modelGroupHideWithWeapon.size() ? sState.modelGroupHideWithWeapon[i] : true;
 					bool conditionVisible = i < sState.modelGroupConditionVisible.size() ? sState.modelGroupConditionVisible[i] : true;
-					bool shouldShow = !suppressDisplays && conditionVisible &&
+					bool shouldShow = allowVisible && !suppressDisplays && conditionVisible &&
 						(hideWithWeapon ? !ShouldHideWeaponDisplay(a_actor, sState) : !sState.isSlotHidden);
 					if (i < sState.modelGroupEffects.size()) {
 						ModelManager::GetSingleton()->ApplyModelEffect(model.get(), sState.modelGroupEffects[i]);
@@ -3752,8 +3648,7 @@
 				}
 				};
 
-			ApplyModelGroupTransforms(sState.currentModelGroups);
-			ApplyModelGroupTransforms(sState.oldModelGroups);
+			ApplyModelGroupTransforms(sState.currentModelGroups, true);
 
 			RE::NiUpdateData ctx; ctx.flags = 0x1;
 			movNode->UpdateTransforms(ctx);
@@ -3769,7 +3664,7 @@
 			}
 		}
 
-		if (a_actor->IsPlayerRef() && (debugSettings.showVanilla || debugSettings.showCME || debugSettings.showMOV)) {
+		if (a_actor->IsPlayerRef() && (debugSettingsSnapshot.showVanilla || debugSettingsSnapshot.showCME || debugSettingsSnapshot.showMOV || debugSettingsSnapshot.worldPreviewEdit)) {
 			auto monitorNames = config->GetNodeMonitorNamesSnapshot();
 			bool useMonitorFilter = runtimeSettings.nodeMonitorUseFilter && !monitorNames.empty();
 			auto passesMonitorFilter = [&](const std::string& nodeName) -> bool {
@@ -3792,15 +3687,22 @@
 						if (nodeName.find("IAD_CME_") == 0) nType = DebugNodeType::kCME;
 						else if (nodeName.find("IAD_MOV_") == 0) nType = DebugNodeType::kMOV;
 
-						if (!passesMonitorFilter(nodeName)) continue;
+						// Editing must be able to reach a node even when the optional
+						// monitor filter is hiding it from the diagnostics view.
+						if (!debugSettingsSnapshot.worldPreviewEdit && !passesMonitorFilter(nodeName)) continue;
 
-						if ((nType == DebugNodeType::kCME && debugSettings.showCME) ||
-							(nType == DebugNodeType::kMOV && debugSettings.showMOV))
+						if ((nType == DebugNodeType::kCME && (debugSettingsSnapshot.showCME || debugSettingsSnapshot.worldPreviewEdit)) ||
+							(nType == DebugNodeType::kMOV && (debugSettingsSnapshot.showMOV || debugSettingsSnapshot.worldPreviewEdit)))
 						{
 							DebugNode dn;
 							dn.pos = managedNode.node->world.translate;
 							dn.hasParent = (managedNode.node->parent != nullptr);
 							if (dn.hasParent) dn.parentPos = managedNode.node->parent->world.translate;
+							dn.parentWorldRotate.MakeIdentity();
+							dn.localRotate.MakeIdentity();
+							dn.rootWorldRotate = actor3D->world.rotate;
+							if (dn.hasParent) dn.parentWorldRotate = managedNode.node->parent->world.rotate;
+							dn.localRotate = managedNode.node->local.rotate;
 
 							dn.name = nodeName;
 							dn.type = nType;
@@ -3808,6 +3710,11 @@
 							dn.axisX = { R.entry[0][0], R.entry[0][1], R.entry[0][2] };
 							dn.axisY = { R.entry[1][0], R.entry[1][1], R.entry[1][2] };
 							dn.axisZ = { R.entry[2][0], R.entry[2][1], R.entry[2][2] };
+							if (nType == DebugNodeType::kCME && nodeStatesIt != _actorNodeStates.end()) {
+								auto nodeStateIt = nodeStatesIt->second.find(StripManagedNodePrefix(nodeName));
+								if (nodeStateIt == nodeStatesIt->second.end()) nodeStateIt = nodeStatesIt->second.find(nodeName);
+								if (nodeStateIt != nodeStatesIt->second.end()) dn.isAbsolute = nodeStateIt->second.isAbsolute;
+							}
 							newNodes.push_back(dn);
 						}
 					}

@@ -2,18 +2,23 @@
 #include "ImGuiManager.h" 
 #include "Data/ConfigManager.h"
 #include "System/HolsterManager.h"
+#include "System/ActorDisplayContext.h"
 #include "System/KeyBindStateManager.h"
 #include "UISettingsWindow.h"
 #include "UIConfigWindows.h" 
 #include "UILogWindow.h" 
+#include "UICommitManager.h"
+#include "UIEditCoordinator.h"
+#include "UIWorldPreviewEditor.h"
+#include "UIWorldPreviewCamera.h"
+#include "UIWorldPreviewSession.h"
+#include "PreviewScene.h"
+#include "PreviewRenderCapabilities.h"
+#include "UILocalization.h"
+#include "UIEditorContextStore.h"
 
 #include <RE/C/ControlMap.h>
 #include <RE/M/MenuCursor.h>
-#include <RE/P/PlayerCharacter.h>
-#include <RE/T/TESForm.h>
-#include <RE/P/ProcessLists.h>
-#include <RE/N/NiCamera.h>
-#include <RE/T/TESCamera.h>
 
 #include <filesystem>
 #include <fstream>
@@ -35,16 +40,12 @@ namespace IAD::UI {
     ID3D11DeviceContext* ImGuiManager::m_pContext = nullptr;
     ID3D11RenderTargetView* ImGuiManager::m_pRenderTargetView = nullptr;
 
-    std::string ImGuiManager::s_selectedSlot = "";
-    std::string ImGuiManager::s_selectedNode = "";
-    std::string ImGuiManager::s_selectedCustom = "";
     bool ImGuiManager::s_activeUIIsRotation = false;
 
-    ImGuiManager::WindowState ImGuiManager::s_slotState;
-    ImGuiManager::WindowState ImGuiManager::s_nodeState;
-    ImGuiManager::WindowState ImGuiManager::s_customState;
+    ImGuiManager::WindowState& ImGuiManager::s_slotState = UIEditorContextStore::GetSingleton().Slot();
+    ImGuiManager::WindowState& ImGuiManager::s_nodeState = UIEditorContextStore::GetSingleton().Node();
+    ImGuiManager::WindowState& ImGuiManager::s_customState = UIEditorContextStore::GetSingleton().Custom();
 
-    static bool s_isCameraPanning = false;
     static std::string s_ieSelectedFile = "";
     static char s_ieInputBuffer[64] = "";
     static uint32_t s_matrixFlags = 0xFFFFFFFF;
@@ -123,7 +124,7 @@ namespace IAD::UI {
                 ImGui::SetWindowPos("IAD_Splash", { currentPos.x + delta.x, currentPos.y + delta.y });
             }
             ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Immersive Arsenal Displays (IAD) v3.0");
-            ImGui::TextDisabled("底层框架与挂载模块已成功加载。");
+            ImGui::TextDisabled(TextLiteral("底层框架与挂载模块已成功加载。"));
             ImGui::Separator();
             auto* config = ConfigManager::GetSingleton();
             const auto inputSettings = config->GetInputSettingsSnapshot();
@@ -142,12 +143,12 @@ namespace IAD::UI {
                 {"O", 0x4F}, {"P", 0x50}, {"Q", 0x51}, {"R", 0x52}, {"S", 0x53}, {"T", 0x54}, {"U", 0x55},
                 {"V", 0x56}, {"W", 0x57}, {"X", 0x58}, {"Y", 0x59}, {"Z", 0x5A}
             };
-            std::string currentKeyName = "未知按键";
+            std::string currentKeyName = TextLiteral("未知按键");
             for (auto& k : availableKeys) { if (k.vk == inputSettings.editorHotkey) { currentKeyName = k.name; break; } }
             hotkeyStr += currentKeyName;
-            ImGui::Text("请按下 [ %s ] 键打开可视化配置菜单", hotkeyStr.c_str());
+            ImGui::Text(TextLiteral("请按下 [ %s ] 键打开可视化配置菜单"), hotkeyStr.c_str());
             if (alpha > 0.8f) {
-                ImGui::Spacing(); ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 0.8f * alpha), "按住此处可拖动此提示框");
+                ImGui::Spacing(); ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 0.8f * alpha), TextLiteral("按住此处可拖动此提示框"));
             }
         }
         ImGui::End(); ImGui::PopStyleVar(4);
@@ -156,63 +157,91 @@ namespace IAD::UI {
     void ImGuiManager::DrawMainMenuBar() {
         auto* config = ConfigManager::GetSingleton();
         if (ImGui::BeginMainMenuBar()) {
-            if (ImGui::BeginMenu("文件")) {
-                if (ImGui::MenuItem("导入 / 导出全局快照")) {
+            if (ImGui::BeginMenu(Text("menu.file"))) {
+                if (ImGui::MenuItem(Text("menu.import_export_snapshot"))) {
                     config->uiProfileRequestedTab = 1;
                     config->uiShowProfiles = true;
                 }
                 ImGui::Separator();
-                if (ImGui::BeginMenu("用户基准配置")) {
-                    if (ImGui::MenuItem("恢复已保存的用户基准")) s_triggerDefaultImport = true;
-                    if (ImGui::MenuItem("将当前配置保存为用户基准")) s_triggerDefaultExport = true;
+                if (ImGui::BeginMenu(Text("menu.user_baseline"))) {
+                    if (ImGui::MenuItem(Text("menu.restore_user_baseline"))) s_triggerDefaultImport = true;
+                    if (ImGui::MenuItem(Text("menu.save_user_baseline"))) s_triggerDefaultExport = true;
                     ImGui::EndMenu();
                 }
                 ImGui::Separator();
-                if (ImGui::MenuItem("保存全部配置")) {
-                    config->SaveConfig();
-                    config->SaveINISettings();
+                if (ImGui::MenuItem(Text("menu.save_all"))) {
+                    UIEditCoordinator::CommitNow();
                 }
                 ImGui::Separator();
-                if (ImGui::MenuItem("关闭配置菜单")) ToggleDisplay();
+                if (ImGui::MenuItem(Text("menu.close"))) ToggleDisplay();
                 ImGui::EndMenu();
             }
-            if (ImGui::BeginMenu("视图")) {
-                if (ImGui::BeginMenu("显示管理")) {
-                    ImGui::MenuItem("装备插槽", nullptr, &config->uiShowSlots);
-                    ImGui::MenuItem("专属展示", nullptr, &config->uiShowCustoms);
+            if (ImGui::BeginMenu(Text("menu.view"))) {
+                const auto toggleView = [](const char* label, bool& value) {
+                    if (ImGui::MenuItem(label, nullptr, &value)) {
+                        UIEditCoordinator::RequestINISettingsSave();
+                    }
+                };
+                if (ImGui::BeginMenu(Text("menu.display_windows"))) {
+                    toggleView(Text("menu.equipment_slots"), config->uiShowSlots);
+                    toggleView(Text("menu.custom_displays"), config->uiShowCustoms);
                     ImGui::EndMenu();
                 }
-                ImGui::MenuItem("挂载节点", nullptr, &config->uiShowNodes);
-                ImGui::MenuItem("表单过滤器", nullptr, &config->uiShowFilters);
+                toggleView(Text("menu.mounted_nodes"), config->uiShowNodes);
+                toggleView(Text("menu.form_filters"), config->uiShowFilters);
                 ImGui::Separator();
-                ImGui::MenuItem("骨骼可视化", nullptr, &config->uiShowVisualizer);
+                toggleView(Text("menu.skeleton_visualizer"), config->uiShowVisualizer);
                 ImGui::EndMenu();
             }
-            if (ImGui::BeginMenu("工具")) {
-                if (ImGui::BeginMenu("预设编辑器")) {
-                    if (ImGui::MenuItem("打开预设库")) { config->uiProfileRequestedTab = 0; config->uiShowProfiles = true; }
+            if (ImGui::BeginMenu(Text("menu.tools"))) {
+                if (ImGui::BeginMenu(Text("menu.profile_editors"))) {
+                    if (ImGui::MenuItem(Text("menu.open_profile_library"))) { config->uiProfileRequestedTab = 0; config->uiShowProfiles = true; }
                     ImGui::Separator();
-                    if (ImGui::MenuItem("装备插槽预设")) { config->uiProfileManagedCategory = 0; config->uiProfileRequestedTab = 0; config->uiShowProfiles = true; }
-                    if (ImGui::MenuItem("挂载节点预设")) { config->uiProfileManagedCategory = 1; config->uiProfileRequestedTab = 0; config->uiShowProfiles = true; }
-                    if (ImGui::MenuItem("专属展示预设")) { config->uiProfileManagedCategory = 2; config->uiProfileRequestedTab = 0; config->uiShowProfiles = true; }
-                    if (ImGui::MenuItem("表单过滤器预设")) { config->uiProfileManagedCategory = 8; config->uiProfileRequestedTab = 0; config->uiShowProfiles = true; }
+                    if (ImGui::MenuItem(Text("menu.slot_profile"))) { config->uiProfileManagedCategory = 0; config->uiProfileRequestedTab = 0; config->uiShowProfiles = true; }
+                    if (ImGui::MenuItem(Text("menu.node_profile"))) { config->uiProfileManagedCategory = 1; config->uiProfileRequestedTab = 0; config->uiShowProfiles = true; }
+                    if (ImGui::MenuItem(Text("menu.custom_profile"))) { config->uiProfileManagedCategory = 2; config->uiProfileRequestedTab = 0; config->uiShowProfiles = true; }
+                    if (ImGui::MenuItem(Text("menu.form_filter_profile"))) { config->uiProfileManagedCategory = 8; config->uiProfileRequestedTab = 0; config->uiShowProfiles = true; }
                     ImGui::EndMenu();
                 }
-                ImGui::MenuItem("IAD 系统设置", nullptr, &config->uiShowSettings);
-                ImGui::MenuItem("日志", nullptr, &UILogWindow::GetSingleton()->m_show);
-                if (ImGui::BeginMenu("诊断")) {
-                    ImGui::MenuItem("骨骼扫描仪", nullptr, &config->uiShowBoneScanner);
+                ImGui::MenuItem(Text("menu.settings"), nullptr, &config->uiShowSettings);
+                ImGui::MenuItem(Text("menu.log"), nullptr, &UILogWindow::GetSingleton()->m_show);
+                if (ImGui::BeginMenu(Text("menu.diagnostics"))) {
+                    ImGui::MenuItem(Text("menu.bone_scanner"), nullptr, &config->uiShowBoneScanner);
                     ImGui::EndMenu();
                 }
                 ImGui::EndMenu();
             }
-            if (ImGui::BeginMenu("帮助")) {
+            if (ImGui::BeginMenu(Text("menu.help"))) {
                 ImGui::TextDisabled("Immersive Arsenal Displays");
                 ImGui::TextDisabled("Fallout 4 F4SE Plugin");
                 ImGui::EndMenu();
             }
-            if (ImGui::BeginMenu("操作")) {
-                if (ImGui::MenuItem("强制刷新显示")) HolsterManager::GetSingleton()->ForceRefreshAll();
+            if (ImGui::BeginMenu(Text("menu.actions"))) {
+                if (ImGui::MenuItem(Text("menu.force_refresh"))) UIEditCoordinator::RequestRuntimeRefresh();
+                ImGui::EndMenu();
+            }
+            UICommitManager::GetSingleton().DrawStatus();
+
+            const auto currentLanguage = GetLanguageID();
+            const char* languageMenuLabel = GetLanguageMenuLabel();
+            const float languageMenuWidth = ImGui::CalcTextSize(languageMenuLabel).x +
+                ImGui::GetStyle().FramePadding.x * 2.0f + ImGui::GetStyle().ItemSpacing.x + ImGui::GetFontSize();
+            const float rightAlignedX = ImGui::GetWindowWidth() - languageMenuWidth - ImGui::GetStyle().FramePadding.x;
+            if (ImGui::GetCursorPosX() < rightAlignedX) {
+                ImGui::SetCursorPosX(rightAlignedX);
+            }
+            if (ImGui::BeginMenu(languageMenuLabel)) {
+                const auto& languages = GetAvailableLanguages();
+                if (languages.empty()) {
+                    ImGui::MenuItem(Text("language.no_files"), nullptr, false, false);
+                }
+                for (const auto& language : languages) {
+                    const bool selected = currentLanguage == language.id;
+                    if (ImGui::MenuItem(language.name.c_str(), nullptr, selected)) {
+                        SetLanguage(language.id);
+                        UIEditCoordinator::RequestINISettingsSave();
+                    }
+                }
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
@@ -229,23 +258,23 @@ namespace IAD::UI {
             }
             };
         if (ImGui::BeginTable("FlagMatrix", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
-            ImGui::TableSetupColumn("类别"); ImGui::TableSetupColumn("全局"); ImGui::TableSetupColumn("角色"); ImGui::TableSetupColumn("NPC / 种族"); ImGui::TableHeadersRow();
-            ImGui::TableNextRow(); ImGui::TableSetColumnIndex(0); ImGui::Text("插槽 (Slots)"); ImGui::TableSetColumnIndex(1); DrawCb("##sg", ConfigManager::SerFlags::kSlotGlobal); ImGui::TableSetColumnIndex(2); DrawCb("##sa", ConfigManager::SerFlags::kSlotActor); ImGui::TableSetColumnIndex(3); DrawCb("NPC##sn", ConfigManager::SerFlags::kSlotNPC); ImGui::SameLine(); DrawCb("Race##sr", ConfigManager::SerFlags::kSlotRace);
-            ImGui::TableNextRow(); ImGui::TableSetColumnIndex(0); ImGui::Text("节点 (Nodes)"); ImGui::TableSetColumnIndex(1); DrawCb("##ng", ConfigManager::SerFlags::kNodeGlobal); ImGui::TableSetColumnIndex(2); DrawCb("##na", ConfigManager::SerFlags::kNodeActor); ImGui::TableSetColumnIndex(3); DrawCb("NPC##nn", ConfigManager::SerFlags::kNodeNPC); ImGui::SameLine(); DrawCb("Race##nr", ConfigManager::SerFlags::kNodeRace);
-            ImGui::TableNextRow(); ImGui::TableSetColumnIndex(0); ImGui::Text("专属 (Customs)"); ImGui::TableSetColumnIndex(1); DrawCb("##cg", ConfigManager::SerFlags::kCustomGlobal); ImGui::TableSetColumnIndex(2); DrawCb("##ca", ConfigManager::SerFlags::kCustomActor); ImGui::TableSetColumnIndex(3); DrawCb("NPC##cn", ConfigManager::SerFlags::kCustomNPC); ImGui::SameLine(); DrawCb("Race##cr", ConfigManager::SerFlags::kCustomRace);
-            ImGui::TableNextRow(); ImGui::TableSetColumnIndex(0); ImGui::TextColored({ 0.4f, 0.8f, 1.0f, 1.0f }, "词典 (Filters)"); ImGui::TableSetColumnIndex(1); DrawCb("##ff", ConfigManager::SerFlags::kFormFilters);
+            ImGui::TableSetupColumn(TextLiteral("类别")); ImGui::TableSetupColumn(TextLiteral("全局")); ImGui::TableSetupColumn(TextLiteral("角色")); ImGui::TableSetupColumn(TextLiteral("NPC / 种族")); ImGui::TableHeadersRow();
+            ImGui::TableNextRow(); ImGui::TableSetColumnIndex(0); ImGui::Text(TextLiteral("插槽 (Slots)")); ImGui::TableSetColumnIndex(1); DrawCb("##sg", ConfigManager::SerFlags::kSlotGlobal); ImGui::TableSetColumnIndex(2); DrawCb("##sa", ConfigManager::SerFlags::kSlotActor); ImGui::TableSetColumnIndex(3); DrawCb("NPC##sn", ConfigManager::SerFlags::kSlotNPC); ImGui::SameLine(); DrawCb("Race##sr", ConfigManager::SerFlags::kSlotRace);
+            ImGui::TableNextRow(); ImGui::TableSetColumnIndex(0); ImGui::Text(TextLiteral("节点 (Nodes)")); ImGui::TableSetColumnIndex(1); DrawCb("##ng", ConfigManager::SerFlags::kNodeGlobal); ImGui::TableSetColumnIndex(2); DrawCb("##na", ConfigManager::SerFlags::kNodeActor); ImGui::TableSetColumnIndex(3); DrawCb("NPC##nn", ConfigManager::SerFlags::kNodeNPC); ImGui::SameLine(); DrawCb("Race##nr", ConfigManager::SerFlags::kNodeRace);
+            ImGui::TableNextRow(); ImGui::TableSetColumnIndex(0); ImGui::Text(TextLiteral("专属 (Customs)")); ImGui::TableSetColumnIndex(1); DrawCb("##cg", ConfigManager::SerFlags::kCustomGlobal); ImGui::TableSetColumnIndex(2); DrawCb("##ca", ConfigManager::SerFlags::kCustomActor); ImGui::TableSetColumnIndex(3); DrawCb("NPC##cn", ConfigManager::SerFlags::kCustomNPC); ImGui::SameLine(); DrawCb("Race##cr", ConfigManager::SerFlags::kCustomRace);
+            ImGui::TableNextRow(); ImGui::TableSetColumnIndex(0); ImGui::TextColored({ 0.4f, 0.8f, 1.0f, 1.0f }, TextLiteral("词典 (Filters)")); ImGui::TableSetColumnIndex(1); DrawCb("##ff", ConfigManager::SerFlags::kFormFilters);
             ImGui::EndTable();
         }
         ImGui::Spacing();
         bool toggleAll = (flags == static_cast<uint32_t>(ConfigManager::SerFlags::kAll));
-        if (ImGui::Checkbox("全选 / 全不选", &toggleAll)) { flags = toggleAll ? static_cast<uint32_t>(ConfigManager::SerFlags::kAll) : 0; changed = true; }
+        if (ImGui::Checkbox(TextLiteral("全选 / 全不选"), &toggleAll)) { flags = toggleAll ? static_cast<uint32_t>(ConfigManager::SerFlags::kAll) : 0; changed = true; }
         return changed;
     }
 
     void ImGuiManager::DrawImportExportWindow() {
         if (!s_showImportExportWindow) return;
         ImGui::SetNextWindowSize({ 380.0f, 0.0f }, ImGuiCond_FirstUseEver);
-        if (ImGui::Begin("导入 / 导出 预设配置", &s_showImportExportWindow, ImGuiWindowFlags_NoCollapse)) {
+        if (ImGui::Begin(TextLiteral("导入 / 导出 预设配置"), &s_showImportExportWindow, ImGuiWindowFlags_NoCollapse)) {
             auto* config = ConfigManager::GetSingleton();
             std::vector<std::string> files = config->GetAvailableExports();
             ImGui::SetNextItemWidth(250.0f);
@@ -253,21 +282,21 @@ namespace IAD::UI {
                 for (auto& f : files) if (ImGui::Selectable(f.c_str(), s_ieSelectedFile == f)) s_ieSelectedFile = f;
                 ImGui::EndCombo();
             }
-            ImGui::SameLine(); ImGui::Text("文件"); ImGui::Spacing();
+            ImGui::SameLine(); ImGui::Text(TextLiteral("文件")); ImGui::Spacing();
             if (s_ieSelectedFile.empty()) ImGui::BeginDisabled();
-            if (ImGui::Button("删除", { 50.0f, 0.0f })) s_triggerDelete = true; ImGui::SameLine();
-            if (ImGui::Button("重命名", { 60.0f, 0.0f })) s_triggerRename = true; ImGui::SameLine();
+            if (ImGui::Button(TextLiteral("删除"), { 50.0f, 0.0f })) s_triggerDelete = true; ImGui::SameLine();
+            if (ImGui::Button(TextLiteral("重命名"), { 60.0f, 0.0f })) s_triggerRename = true; ImGui::SameLine();
             if (s_ieSelectedFile.empty()) ImGui::EndDisabled();
-            if (ImGui::Button("刷新目录", { 70.0f, 0.0f })) s_ieSelectedFile = "";
+            if (ImGui::Button(TextLiteral("刷新目录"), { 70.0f, 0.0f })) s_ieSelectedFile = "";
             ImGui::Separator(); ImGui::Spacing();
             if (s_ieSelectedFile.empty()) ImGui::BeginDisabled();
-            if (ImGui::Button("导入 (Import)", { 100.0f, 0.0f })) s_triggerImport = true; ImGui::SameLine();
+            if (ImGui::Button(TextLiteral("导入 (Import)"), { 100.0f, 0.0f })) s_triggerImport = true; ImGui::SameLine();
             if (s_ieSelectedFile.empty()) ImGui::EndDisabled();
-            if (ImGui::Button("导出 (Export)", { 100.0f, 0.0f })) ImGui::OpenPopup("ExportContext"); ImGui::SameLine();
-            if (ImGui::Button("关闭 (Close)", { 100.0f, 0.0f })) s_showImportExportWindow = false;
+            if (ImGui::Button(TextLiteral("导出 (Export)"), { 100.0f, 0.0f })) ImGui::OpenPopup("ExportContext"); ImGui::SameLine();
+            if (ImGui::Button(TextLiteral("关闭 (Close)"), { 100.0f, 0.0f })) s_showImportExportWindow = false;
             if (ImGui::BeginPopup("ExportContext")) {
-                if (ImGui::MenuItem("新建预设文件")) s_triggerExportNew = true;
-                if (!s_ieSelectedFile.empty()) { ImGui::Separator(); if (ImGui::MenuItem("覆盖当前选中文件")) s_triggerExportOverwrite = true; }
+                if (ImGui::MenuItem(TextLiteral("新建预设文件"))) s_triggerExportNew = true;
+                if (!s_ieSelectedFile.empty()) { ImGui::Separator(); if (ImGui::MenuItem(TextLiteral("覆盖当前选中文件"))) s_triggerExportOverwrite = true; }
                 ImGui::EndPopup();
             }
         }
@@ -280,83 +309,101 @@ namespace IAD::UI {
         if (s_triggerExportNew) { ImGui::OpenPopup("Confirm##IENew"); strcpy_s(s_ieInputBuffer, "NewPreset"); s_matrixFlags = 0xFFFFFFFF; s_triggerExportNew = false; }
         if (s_triggerExportOverwrite) { ImGui::OpenPopup("Confirm##IEOvw"); s_matrixFlags = 0xFFFFFFFF; s_triggerExportOverwrite = false; }
         if (s_triggerRename) { ImGui::OpenPopup("Rename"); strcpy_s(s_ieInputBuffer, s_ieSelectedFile.c_str()); s_triggerRename = false; }
-        if (s_triggerDelete) { ImGui::OpenPopup("Confirm##IEDelete"); s_triggerDelete = false; }
+        if (s_triggerDelete) { ImGui::OpenPopup("Confirm##IADDelete"); s_triggerDelete = false; }
         if (s_triggerDefaultImport) { ImGui::OpenPopup("Confirm##DCImport"); s_triggerDefaultImport = false; }
         if (s_triggerDefaultExport) { ImGui::OpenPopup("Confirm##DCExport"); s_matrixFlags = 0xFFFFFFFF; s_triggerDefaultExport = false; }
 
         if (ImGui::BeginPopupModal("Confirm##IEImport", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("确定要导入预设吗？ [%s]", s_ieSelectedFile.c_str()); ImGui::Separator(); DrawFlagMatrix(s_matrixFlags); ImGui::Separator();
-            ImGui::Checkbox("跳过覆盖临时引用 (Skip temp ref)", &s_skipTempRef); ImGui::Separator();
-            ImGui::RadioButton("覆盖模式 (Overwrite)", &s_importMode, 0); ImGui::SameLine(); ImGui::RadioButton("合并模式 (Merge)", &s_importMode, 1); ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+            ImGui::Text(TextLiteral("确定要导入预设吗？ [%s]"), s_ieSelectedFile.c_str()); ImGui::Separator(); DrawFlagMatrix(s_matrixFlags); ImGui::Separator();
+            ImGui::Checkbox(TextLiteral("跳过覆盖临时引用 (Skip temp ref)"), &s_skipTempRef); ImGui::Separator();
+            ImGui::RadioButton(TextLiteral("覆盖模式 (Overwrite)"), &s_importMode, 0); ImGui::SameLine(); ImGui::RadioButton(TextLiteral("合并模式 (Merge)"), &s_importMode, 1); ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
             if (s_matrixFlags == 0) ImGui::BeginDisabled();
-            if (ImGui::Button("确定", { 120.0f, 0.0f })) { config->ImportPreset(s_ieSelectedFile, s_matrixFlags, s_importMode == 1); HolsterManager::GetSingleton()->ForceRefreshAll(); ImGui::CloseCurrentPopup(); }
-            if (s_matrixFlags == 0) ImGui::EndDisabled(); ImGui::SameLine(); if (ImGui::Button("取消", { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
+            if (ImGui::Button(TextLiteral("确定"), { 120.0f, 0.0f })) { config->ImportPreset(s_ieSelectedFile, s_matrixFlags, s_importMode == 1); UIEditCoordinator::RequestRuntimeRefresh(); ImGui::CloseCurrentPopup(); }
+            if (s_matrixFlags == 0) ImGui::EndDisabled(); ImGui::SameLine(); if (ImGui::Button(TextLiteral("取消"), { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
         }
         if (ImGui::BeginPopupModal("Confirm##IENew", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("导出到新文件:"); ImGui::Separator(); ImGui::SetNextItemWidth(250.0f); ImGui::InputText("##nf", s_ieInputBuffer, 64); ImGui::Separator(); DrawFlagMatrix(s_matrixFlags); ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+            ImGui::Text(TextLiteral("导出到新文件:")); ImGui::Separator(); ImGui::SetNextItemWidth(250.0f); ImGui::InputText("##nf", s_ieInputBuffer, 64); ImGui::Separator(); DrawFlagMatrix(s_matrixFlags); ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
             if (s_matrixFlags == 0 || strlen(s_ieInputBuffer) == 0) ImGui::BeginDisabled();
-            if (ImGui::Button("确定", { 120.0f, 0.0f })) { config->ExportPreset(s_ieInputBuffer, s_matrixFlags); s_ieSelectedFile = s_ieInputBuffer; ImGui::CloseCurrentPopup(); }
-            if (s_matrixFlags == 0 || strlen(s_ieInputBuffer) == 0) ImGui::EndDisabled(); ImGui::SameLine(); if (ImGui::Button("取消", { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
+            if (ImGui::Button(TextLiteral("确定"), { 120.0f, 0.0f })) { config->ExportPreset(s_ieInputBuffer, s_matrixFlags); s_ieSelectedFile = s_ieInputBuffer; ImGui::CloseCurrentPopup(); }
+            if (s_matrixFlags == 0 || strlen(s_ieInputBuffer) == 0) ImGui::EndDisabled(); ImGui::SameLine(); if (ImGui::Button(TextLiteral("取消"), { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
         }
         if (ImGui::BeginPopupModal("Confirm##IEOvw", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("确定要覆盖该预设吗？ [%s]", s_ieSelectedFile.c_str()); ImGui::Separator(); DrawFlagMatrix(s_matrixFlags); ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+            ImGui::Text(TextLiteral("确定要覆盖该预设吗？ [%s]"), s_ieSelectedFile.c_str()); ImGui::Separator(); DrawFlagMatrix(s_matrixFlags); ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
             if (s_matrixFlags == 0) ImGui::BeginDisabled();
-            if (ImGui::Button("确定", { 120.0f, 0.0f })) { config->ExportPreset(s_ieSelectedFile, s_matrixFlags); ImGui::CloseCurrentPopup(); }
-            if (s_matrixFlags == 0) ImGui::EndDisabled(); ImGui::SameLine(); if (ImGui::Button("取消", { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
+            if (ImGui::Button(TextLiteral("确定"), { 120.0f, 0.0f })) { config->ExportPreset(s_ieSelectedFile, s_matrixFlags); ImGui::CloseCurrentPopup(); }
+            if (s_matrixFlags == 0) ImGui::EndDisabled(); ImGui::SameLine(); if (ImGui::Button(TextLiteral("取消"), { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
         }
         if (ImGui::BeginPopupModal("Rename", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("重命名该预设:"); ImGui::SetNextItemWidth(250.0f); ImGui::InputText("##rn", s_ieInputBuffer, 64); ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
-            if (ImGui::Button("确定", { 120.0f, 0.0f })) { if (config->RenameExport(s_ieSelectedFile, s_ieInputBuffer)) s_ieSelectedFile = s_ieInputBuffer; ImGui::CloseCurrentPopup(); }
-            ImGui::SameLine(); if (ImGui::Button("取消", { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
+            ImGui::Text(TextLiteral("重命名该预设:")); ImGui::SetNextItemWidth(250.0f); ImGui::InputText("##rn", s_ieInputBuffer, 64); ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+            if (ImGui::Button(TextLiteral("确定"), { 120.0f, 0.0f })) { if (config->RenameExport(s_ieSelectedFile, s_ieInputBuffer)) s_ieSelectedFile = s_ieInputBuffer; ImGui::CloseCurrentPopup(); }
+            ImGui::SameLine(); if (ImGui::Button(TextLiteral("取消"), { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
         }
-        if (ImGui::BeginPopupModal("Confirm##IEDelete", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("确定彻底删除此文件吗？ [%s]", s_ieSelectedFile.c_str()); ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
-            if (ImGui::Button("确定", { 120.0f, 0.0f })) { if (config->DeleteExport(s_ieSelectedFile)) s_ieSelectedFile = ""; ImGui::CloseCurrentPopup(); }
-            ImGui::SameLine(); if (ImGui::Button("取消", { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
+        if (ImGui::BeginPopupModal("Confirm##IADDelete", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text(TextLiteral("确定彻底删除此文件吗？ [%s]"), s_ieSelectedFile.c_str()); ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+            if (ImGui::Button(TextLiteral("确定"), { 120.0f, 0.0f })) { if (config->DeleteExport(s_ieSelectedFile)) s_ieSelectedFile = ""; ImGui::CloseCurrentPopup(); }
+            ImGui::SameLine(); if (ImGui::Button(TextLiteral("取消"), { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
         }
         if (ImGui::BeginPopupModal("Confirm##DCImport", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("恢复用户基准配置");
-            ImGui::TextDisabled("这会用你保存的 IAD_DefaultConfigUser 覆盖当前显示规则。");
+            ImGui::Text(TextLiteral("恢复用户基准配置"));
+            ImGui::TextDisabled(TextLiteral("这会用你保存的 IAD_DefaultConfigUser 覆盖当前显示规则。"));
             ImGui::Separator();
             const auto exports = config->GetAvailableExports();
             const bool hasUserDef = std::find(exports.begin(), exports.end(), "IAD_DefaultConfigUser") != exports.end();
             if (!hasUserDef) ImGui::BeginDisabled();
-            if (ImGui::Button("恢复", { 120.0f, 0.0f })) { config->ImportPreset("IAD_DefaultConfigUser", static_cast<uint32_t>(ConfigManager::SerFlags::kAll), false); HolsterManager::GetSingleton()->ForceRefreshAll(); ImGui::CloseCurrentPopup(); }
-            if (!hasUserDef) ImGui::EndDisabled(); ImGui::SameLine(); if (ImGui::Button("取消", { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
+            if (ImGui::Button(TextLiteral("恢复"), { 120.0f, 0.0f })) { config->ImportPreset("IAD_DefaultConfigUser", static_cast<uint32_t>(ConfigManager::SerFlags::kAll), false); UIEditCoordinator::RequestRuntimeRefresh(); ImGui::CloseCurrentPopup(); }
+            if (!hasUserDef) ImGui::EndDisabled(); ImGui::SameLine(); if (ImGui::Button(TextLiteral("取消"), { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
         }
         if (ImGui::BeginPopupModal("Confirm##DCExport", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("确定将当前状态保存为用户默认配置吗？"); ImGui::Separator(); DrawFlagMatrix(s_matrixFlags); ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
-            if (ImGui::Button("确定", { 120.0f, 0.0f })) { config->ExportPreset("IAD_DefaultConfigUser", s_matrixFlags); ImGui::CloseCurrentPopup(); } ImGui::SameLine(); if (ImGui::Button("取消", { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
+            ImGui::Text(TextLiteral("确定将当前状态保存为用户默认配置吗？")); ImGui::Separator(); DrawFlagMatrix(s_matrixFlags); ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing();
+            if (ImGui::Button(TextLiteral("确定"), { 120.0f, 0.0f })) { config->ExportPreset("IAD_DefaultConfigUser", s_matrixFlags); ImGui::CloseCurrentPopup(); } ImGui::SameLine(); if (ImGui::Button(TextLiteral("取消"), { 120.0f, 0.0f })) ImGui::CloseCurrentPopup(); ImGui::EndPopup();
         }
         DrawImportExportWindow();
     }
 
     void ImGuiManager::RegisterWindows() {
-        m_windows.push_back(std::make_unique<UISettingsWindow>());
-        m_windows.push_back(std::make_unique<UISlotsWindow>());
-        m_windows.push_back(std::make_unique<UINodesWindow>());
-        m_windows.push_back(std::make_unique<UICustomsWindow>());
-        m_windows.push_back(std::make_unique<UIProfileEditorWindow>());
-        m_windows.push_back(std::make_unique<UIProfileSlotsWindow>());
-        m_windows.push_back(std::make_unique<UIProfileCustomsWindow>());
-        m_windows.push_back(std::make_unique<UIProfileNodesWindow>());
-        m_windows.push_back(std::make_unique<UIProfileFormFiltersWindow>());
-        m_windows.push_back(std::make_unique<UIProfileModelGroupsWindow>());
-        m_windows.push_back(std::make_unique<UIProfileNodeMonitorsWindow>());
-        m_windows.push_back(std::make_unique<UIProfileConditionsWindow>());
-        m_windows.push_back(std::make_unique<UIProfileTransformsWindow>());
-        m_windows.push_back(std::make_unique<UIProfilePhysicsWindow>());
-        m_windows.push_back(std::make_unique<UIFiltersWindow>());
-        m_windows.push_back(std::make_unique<UIBoneScannerWindow>());
-        m_windows.push_back(std::make_unique<UIVisualizerWindow>());
+        auto* config = ConfigManager::GetSingleton();
+        const auto registerConfigWindow = [this, config](
+            std::unique_ptr<UIWindow> a_window,
+            int a_focusIndex,
+            const char* a_titleKey,
+            bool ConfigManager::* a_visibility) {
+            m_windowShell.Register(
+                std::move(a_window),
+                a_focusIndex,
+                a_titleKey,
+                [config, a_visibility] { return config->*a_visibility; });
+        };
 
-        m_windows.push_back(std::unique_ptr<UIWindow>(UILogWindow::GetSingleton()));
+        registerConfigWindow(std::make_unique<UISlotsWindow>(), 1, "window.slots", &ConfigManager::uiShowSlots);
+        registerConfigWindow(std::make_unique<UINodesWindow>(), 2, "window.nodes", &ConfigManager::uiShowNodes);
+        registerConfigWindow(std::make_unique<UICustomsWindow>(), 3, "window.customs", &ConfigManager::uiShowCustoms);
+        registerConfigWindow(std::make_unique<UIFiltersWindow>(), 4, "window.filters", &ConfigManager::uiShowFilters);
+        registerConfigWindow(std::make_unique<UISettingsWindow>(), 5, "window.settings", &ConfigManager::uiShowSettings);
+        registerConfigWindow(std::make_unique<UIBoneScannerWindow>(), 6, "window.bone_scanner", &ConfigManager::uiShowBoneScanner);
+        registerConfigWindow(std::make_unique<UIVisualizerWindow>(), 7, "window.visualizer", &ConfigManager::uiShowVisualizer);
+        registerConfigWindow(std::make_unique<UIProfileEditorWindow>(), 8, "window.profiles", &ConfigManager::uiShowProfiles);
+        registerConfigWindow(std::make_unique<UIProfileSlotsWindow>(), 9, "window.profile_slots", &ConfigManager::uiShowProfileSlots);
+        registerConfigWindow(std::make_unique<UIProfileCustomsWindow>(), 10, "window.profile_customs", &ConfigManager::uiShowProfileCustoms);
+        registerConfigWindow(std::make_unique<UIProfileNodesWindow>(), 11, "window.profile_nodes", &ConfigManager::uiShowProfileNodes);
+        registerConfigWindow(std::make_unique<UIProfileFormFiltersWindow>(), 12, "window.profile_filters", &ConfigManager::uiShowProfileFormFilters);
+        registerConfigWindow(std::make_unique<UIProfileModelGroupsWindow>(), 13, "window.profile_model_groups", &ConfigManager::uiShowProfileModelGroups);
+        registerConfigWindow(std::make_unique<UIProfileNodeMonitorsWindow>(), 14, "window.profile_node_monitors", &ConfigManager::uiShowProfileNodeMonitors);
+        registerConfigWindow(std::make_unique<UIProfileConditionsWindow>(), 15, "window.profile_conditions", &ConfigManager::uiShowProfileConditions);
+        registerConfigWindow(std::make_unique<UIProfileTransformsWindow>(), 16, "window.profile_transforms", &ConfigManager::uiShowProfileTransforms);
+        registerConfigWindow(std::make_unique<UIProfilePhysicsWindow>(), 17, "window.profile_physics", &ConfigManager::uiShowProfilePhysics);
+
+        m_windowShell.Register(
+            std::unique_ptr<UIWindow>(UILogWindow::GetSingleton()),
+            18,
+            "window.log",
+            [] { return UILogWindow::GetSingleton()->m_show; });
+        m_windowShell.Initialize();
 
         auto ui_sink = std::make_shared<ImGuiSink<std::mutex>>();
         ui_sink->set_pattern("[%H:%M:%S] [%^%l%$] %v");
         spdlog::default_logger()->sinks().push_back(ui_sink);
 
-        REX::INFO("[IAD] 面向对象 UI 窗口池及日志控制台注册完成！");
+        REX::INFO(TextLiteral("[IAD] 面向对象 UI 窗口池及日志控制台注册完成！"));
     }
 
     HRESULT WINAPI ImGuiManager::Present_Hook(IDXGISwapChain* sc, UINT si, UINT f) { GetSingleton().RenderCore(sc); return m_originalPresent(sc, si, f); }
@@ -369,6 +416,7 @@ namespace IAD::UI {
         auto cm = RE::ControlMap::GetSingleton();
         auto mc = RE::MenuCursor::GetSingleton();
         auto* config = ConfigManager::GetSingleton();
+        std::lock_guard<std::recursive_mutex> configLock(config->_configMutex);
 
         if (m_isVisible) {
 			// The consolidated preset library supersedes the old per-category editor
@@ -383,9 +431,10 @@ namespace IAD::UI {
 			config->uiShowProfileConditions = false;
 			config->uiShowProfileTransforms = false;
 			config->uiShowProfilePhysics = false;
-			if (config->uiLastClosedWindow >= 9) {
+            if (config->uiLastClosedWindow >= 9) {
 				config->uiLastClosedWindow = 8;
 			}
+            m_pendingFocusWindowIndex = config->uiLastClosedWindow > 0 ? config->uiLastClosedWindow : 1;
 
             if (!config->uiShowSlots && !config->uiShowNodes && !config->uiShowCustoms &&
                 !config->uiShowProfiles && !config->uiShowFilters && !config->uiShowSettings &&
@@ -409,14 +458,22 @@ namespace IAD::UI {
             RefreshCursorClip();
         }
         else {
-            s_isCameraPanning = false;
+            if (m_lastFocusedWindowIndex > 0) {
+                config->uiLastClosedWindow = m_lastFocusedWindowIndex;
+            }
+            UIWorldPreviewSession::GetSingleton().End("menu closed");
             ImGui::GetIO().MouseDrawCursor = false;
             if (cm) { cm->PopInputContext(RE::UserEvents::INPUT_CONTEXT_ID::kCursor); cm->SetIgnoreKeyboardMouse(false); }
             if (mc) mc->UnregisterCursor();
             if (m_originalClipCursor) m_originalClipCursor(nullptr);
 
-            config->SaveConfig();
-            config->SaveINISettings();
+            UIEditCoordinator::CommitNow();
+        }
+    }
+
+    void ImGuiManager::NotifyWindowFocused(int a_windowIndex, bool a_focused) {
+        if (a_focused && a_windowIndex > 0) {
+            m_lastFocusedWindowIndex = a_windowIndex;
         }
     }
 
@@ -467,7 +524,7 @@ namespace IAD::UI {
 
     BOOL WINAPI ImGuiManager::ClipCursor_Hook(const RECT* rect) {
         auto& manager = GetSingleton();
-        if (manager.m_isVisible.load(std::memory_order_acquire) && !s_isCameraPanning && manager.m_originalClipCursor) {
+        if (manager.m_isVisible.load(std::memory_order_acquire) && manager.m_originalClipCursor) {
             RECT windowRect{};
             if (manager.m_windowHandle && GetWindowRect(manager.m_windowHandle, &windowRect)) {
                 return manager.m_originalClipCursor(&windowRect);
@@ -479,7 +536,7 @@ namespace IAD::UI {
 
     BOOL WINAPI ImGuiManager::SetCursorPos_Hook(int x, int y) {
         auto& manager = GetSingleton();
-        if (manager.m_isVisible.load(std::memory_order_acquire) && !s_isCameraPanning) {
+        if (manager.m_isVisible.load(std::memory_order_acquire)) {
             return TRUE;
         }
 
@@ -562,88 +619,89 @@ namespace IAD::UI {
             m_isInit = true;
         }
 
-        auto* config = ConfigManager::GetSingleton();
-        std::lock_guard<std::recursive_mutex> lock(config->_configMutex);
-        auto& io = ImGui::GetIO(); auto cm = RE::ControlMap::GetSingleton(); auto mc = RE::MenuCursor::GetSingleton();
-
-        if (m_isVisible) {
-            RefreshCursorClip();
-            if (ImGui::IsMouseDown(1) && !s_isCameraPanning) { s_isCameraPanning = true; cm->PopInputContext(RE::UserEvents::INPUT_CONTEXT_ID::kCursor); mc->UnregisterCursor(); io.MouseDrawCursor = false; }
-            else if (!ImGui::IsMouseDown(1) && s_isCameraPanning) { s_isCameraPanning = false; cm->PushInputContext(RE::UserEvents::INPUT_CONTEXT_ID::kCursor); mc->RegisterCursor(); io.MouseDrawCursor = true; }
-            cm->SetIgnoreKeyboardMouse(!s_isCameraPanning);
+        if (m_pDevice && m_pContext) {
+            PreviewRenderCapabilities::GetSingleton().Refresh(sc, m_pDevice, m_pContext);
         }
 
+        auto* config = ConfigManager::GetSingleton();
+        std::unique_lock<std::recursive_mutex> configLock(config->_configMutex);
+        auto& io = ImGui::GetIO();
+
+        if (m_isVisible) RefreshCursorClip();
+
         ImGui_ImplDX11_NewFrame(); ImGui_ImplWin32_NewFrame(); ImGui::NewFrame();
+        UIWorldPreviewEditor::GetSingleton().BeginViewportFrame(ImGui::GetIO().DisplaySize);
 
         if (m_isVisible) {
             DrawMainMenuBar();
 
-            for (auto& window : m_windows) {
-                window->Draw();
+            m_windowShell.Draw();
+
+            // The first open after startup has no ImGui window objects yet, so
+            // request focus after the window pool has submitted its Begin calls.
+            // On later opens this also overrides the docking layout's stale tab.
+            if (m_pendingFocusWindowIndex > 0) {
+                if (const auto* title = m_windowShell.GetTopLevelWindowTitle(m_pendingFocusWindowIndex)) {
+                    ImGui::SetWindowFocus(title);
+                }
+                m_pendingFocusWindowIndex = -1;
             }
 
-            int openCount = 0; int lastActiveIndex = -1;
-            if (config->uiShowSlots) { openCount++; lastActiveIndex = 1; }
-            if (config->uiShowNodes) { openCount++; lastActiveIndex = 2; }
-            if (config->uiShowCustoms) { openCount++; lastActiveIndex = 3; }
-            if (config->uiShowFilters) { openCount++; lastActiveIndex = 4; }
-            if (config->uiShowSettings) { openCount++; lastActiveIndex = 5; }
-            if (config->uiShowBoneScanner) { openCount++; lastActiveIndex = 6; }
-            if (config->uiShowVisualizer) { openCount++; lastActiveIndex = 7; }
-            if (config->uiShowProfiles) { openCount++; lastActiveIndex = 8; }
-            if (config->uiShowProfileSlots) { openCount++; lastActiveIndex = 9; }
-            if (config->uiShowProfileCustoms) { openCount++; lastActiveIndex = 10; }
-            if (config->uiShowProfileNodes) { openCount++; lastActiveIndex = 11; }
-            if (config->uiShowProfileFormFilters) { openCount++; lastActiveIndex = 12; }
-            if (config->uiShowProfileModelGroups) { openCount++; lastActiveIndex = 13; }
-            if (config->uiShowProfileNodeMonitors) { openCount++; lastActiveIndex = 14; }
-            if (config->uiShowProfileConditions) { openCount++; lastActiveIndex = 15; }
-            if (config->uiShowProfileTransforms) { openCount++; lastActiveIndex = 16; }
-            if (config->uiShowProfilePhysics) { openCount++; lastActiveIndex = 17; }
+            const int openCount = static_cast<int>(m_windowShell.OpenWindowCount());
 
             static int s_prevOpenCount = -1;
-            static int s_prevLastActiveIndex = 1;
             if (s_prevOpenCount == -1) s_prevOpenCount = openCount;
-            if (openCount > 0 && lastActiveIndex > 0) s_prevLastActiveIndex = lastActiveIndex;
             if (s_prevOpenCount > 0 && openCount == 0) {
-                config->uiLastClosedWindow = s_prevLastActiveIndex;
+                config->uiLastClosedWindow = m_lastFocusedWindowIndex;
                 ToggleDisplay();
             }
             s_prevOpenCount = openCount;
         }
 
+        configLock.unlock();
+
         auto* hm = HolsterManager::GetSingleton();
         if (!ImGui::IsAnyItemActive()) hm->activeUIItemAxis = ActiveAxis::kNone;
 
-        std::lock_guard<std::mutex> boxLock(hm->debugBoxMutex);
-        if (!hm->activeDebugBoxes.empty() || !hm->activeDebugNodes.empty()) {
-            RE::NiCamera* niCamera = nullptr; auto playerCam = RE::PlayerCamera::GetSingleton();
-            if (playerCam && playerCam->cameraRoot) {
-                std::function<void(RE::NiAVObject*)> FindCamera = [&](RE::NiAVObject* obj) {
-                    if (niCamera || !obj) return;
-                    const RE::NiRTTI* rtti = obj->GetRTTI();
-                    if (rtti && rtti->name) {
-                        if (strstr(rtti->name, "NiCamera")) { niCamera = reinterpret_cast<RE::NiCamera*>(obj); return; }
-                        if (strstr(rtti->name, "Node") || strstr(rtti->name, "FadeNode")) {
-                            RE::NiNode* node = reinterpret_cast<RE::NiNode*>(obj);
-                            for (auto& child : node->children) { if (child) FindCamera(child.get()); }
-                        }
-                    }
-                    };
-                FindCamera(playerCam->cameraRoot.get());
+        const bool menuVisible = m_isVisible.load(std::memory_order_acquire);
+        ActorDisplaySnapshot displaySnapshot;
+        ActorDisplayContext::GetSingleton().Acquire(displaySnapshot);
+        DebugSettings debugSettings = displaySnapshot.settings;
+        auto debugBoxes = std::move(displaySnapshot.boxes);
+        auto debugNodes = std::move(displaySnapshot.nodes);
+        auto debugBoundSpheres = std::move(displaySnapshot.modelBounds);
+        auto& previewEditor = UIWorldPreviewEditor::GetSingleton();
+		static ActorDisplayIdentity s_lastDisplayIdentity;
+		static bool s_hasDisplayIdentity = false;
+		if (!s_hasDisplayIdentity || !displaySnapshot.identity.SameScene(s_lastDisplayIdentity)) {
+			if (s_hasDisplayIdentity) {
+				previewEditor.InvalidateSceneSnapshot();
+				UIEditorContextStore::GetSingleton().ClearSelections();
+			}
+			s_lastDisplayIdentity = displaySnapshot.identity;
+			s_hasDisplayIdentity = true;
+		}
+        previewEditor.SetDebugSettings(debugSettings);
+		PreviewScene::GetSingleton().SetDetachedRequested(
+			menuVisible && debugSettings.worldPreviewEdit && debugSettings.worldPreviewDetached);
+        if (menuVisible && (debugSettings.worldPreviewEdit || !debugBoxes.empty() || !debugNodes.empty())) {
+            auto& previewScene = PreviewScene::GetSingleton().GetActive();
+            const ImVec2 screenSize = ImGui::GetIO().DisplaySize;
+            const ImVec2 viewportMin{ 0.0f, 0.0f };
+            const ImVec2 viewportMax = screenSize;
+            PreviewSceneSnapshot previewSnapshot;
+            previewSnapshot.identity = displaySnapshot.identity;
+            if (auto* player = RE::PlayerCharacter::GetSingleton()) {
+                previewSnapshot.actorPosition = player->GetPosition();
             }
-
-            if (niCamera) {
-                auto drawList = ImGui::GetBackgroundDrawList(); ImVec2 screenSize = ImGui::GetIO().DisplaySize;
+            if (previewScene.CaptureFrame(previewSnapshot, viewportMin, viewportMax)) {
+                auto drawList = ImGui::GetBackgroundDrawList();
                 auto WorldToScreen = [&](const RE::NiPoint3& wp, ImVec2& sp) -> bool {
-                    float w = niCamera->worldToCam[3][0] * wp.x + niCamera->worldToCam[3][1] * wp.y + niCamera->worldToCam[3][2] * wp.z + niCamera->worldToCam[3][3];
-                    if (w < 0.001f) return false; float invW = 1.0f / w;
-                    float x = (niCamera->worldToCam[0][0] * wp.x + niCamera->worldToCam[0][1] * wp.y + niCamera->worldToCam[0][2] * wp.z + niCamera->worldToCam[0][3]) * invW;
-                    float y = (niCamera->worldToCam[1][0] * wp.x + niCamera->worldToCam[1][1] * wp.y + niCamera->worldToCam[1][2] * wp.z + niCamera->worldToCam[1][3]) * invW;
-                    sp.x = ((x + 1.0f) * 0.5f) * screenSize.x; sp.y = ((1.0f - y) * 0.5f) * screenSize.y; return true;
-                    };
+                    return previewScene.WorldToScreen(wp, sp);
+                };
 
-                for (auto& box : hm->activeDebugBoxes) {
+                if (!debugSettings.worldPreviewEdit) {
+                for (auto& box : debugBoxes) {
                     if (box.drawBox) {
                         ImVec2 pts[8]; bool allValid = true;
                         for (int i = 0; i < 8; i++) { if (!WorldToScreen(box.corners[i], pts[i])) { allValid = false; break; } }
@@ -665,7 +723,7 @@ namespace IAD::UI {
                                 if (valid && prevValid) drawList->AddLine(prevSp, sp, col, 1.5f); prevSp = sp; prevValid = valid;
                             }
                             };
-                        RE::NiPoint3 ax = hm->debugSettings.useLocalAxesSpace ? box.axisX : RE::NiPoint3{ 1, 0, 0 }; RE::NiPoint3 ay = hm->debugSettings.useLocalAxesSpace ? box.axisY : RE::NiPoint3{ 0, 1, 0 }; RE::NiPoint3 az = hm->debugSettings.useLocalAxesSpace ? box.axisZ : RE::NiPoint3{ 0, 0, 1 };
+                        RE::NiPoint3 ax = debugSettings.useLocalAxesSpace ? box.axisX : RE::NiPoint3{ 1, 0, 0 }; RE::NiPoint3 ay = debugSettings.useLocalAxesSpace ? box.axisY : RE::NiPoint3{ 0, 1, 0 }; RE::NiPoint3 az = debugSettings.useLocalAxesSpace ? box.axisZ : RE::NiPoint3{ 0, 0, 1 };
                         Draw3DCircle(box.sphereCenter, ay, az, box.sphereRadius, colSphere); Draw3DCircle(box.sphereCenter, ax, az, box.sphereRadius, colSphere); Draw3DCircle(box.sphereCenter, ax, ay, box.sphereRadius, colSphere);
                     }
                     ImVec2 centerPt;
@@ -676,9 +734,9 @@ namespace IAD::UI {
                             if (validVirt && dist_sq > 0.01f) { drawList->AddCircleFilled(centerPt, 4.0f, IM_COL32(0, 150, 255, 255)); drawList->AddLine(centerPt, virtPt, IM_COL32(0, 150, 255, 150), 2.0f); }
                             if (validVirt && validTip) { drawList->AddCircleFilled(virtPt, 5.0f, IM_COL32(255, 50, 50, 255)); drawList->AddLine(virtPt, tipPt, IM_COL32(255, 50, 50, 200), 2.5f); float time = static_cast<float>(ImGui::GetTime()); float pulse = (sinf(time * 10.0f) + 1.0f) * 0.5f; drawList->AddCircle(tipPt, 6.0f + pulse * 4.0f, IM_COL32(255, 200, 50, 200 - static_cast<int>(pulse * 150.0f)), 0, 2.0f); }
                         }
-                        if (hm->debugSettings.showCMEAaxes || hm->debugSettings.showMOVAxes) {
+                        if (debugSettings.showCMEAaxes || debugSettings.showMOVAxes) {
                             float axisLen = 12.0f; ImVec2 pX, pY, pZ;
-                            RE::NiPoint3 ax = hm->debugSettings.useLocalAxesSpace ? box.axisX : RE::NiPoint3{ 1, 0, 0 }; RE::NiPoint3 ay = hm->debugSettings.useLocalAxesSpace ? box.axisY : RE::NiPoint3{ 0, 1, 0 }; RE::NiPoint3 az = hm->debugSettings.useLocalAxesSpace ? box.axisZ : RE::NiPoint3{ 0, 0, 1 };
+                            RE::NiPoint3 ax = debugSettings.useLocalAxesSpace ? box.axisX : RE::NiPoint3{ 1, 0, 0 }; RE::NiPoint3 ay = debugSettings.useLocalAxesSpace ? box.axisY : RE::NiPoint3{ 0, 1, 0 }; RE::NiPoint3 az = debugSettings.useLocalAxesSpace ? box.axisZ : RE::NiPoint3{ 0, 0, 1 };
                             RE::NiPoint3 wX = { box.center.x + ax.x * axisLen, box.center.y + ax.y * axisLen, box.center.z + ax.z * axisLen }; RE::NiPoint3 wY = { box.center.x + ay.x * axisLen, box.center.y + ay.y * axisLen, box.center.z + ay.z * axisLen }; RE::NiPoint3 wZ = { box.center.x + az.x * axisLen, box.center.y + az.y * axisLen, box.center.z + az.z * axisLen };
                             if (WorldToScreen(wX, pX)) drawList->AddLine(centerPt, pX, IM_COL32(255, 50, 50, 255), 2.5f);
                             if (WorldToScreen(wY, pY)) drawList->AddLine(centerPt, pY, IM_COL32(50, 255, 50, 255), 2.5f);
@@ -723,17 +781,18 @@ namespace IAD::UI {
                     }
                 }
 
-                for (auto& dn : hm->activeDebugNodes) {
+                for (auto& dn : debugNodes) {
+                    if (!previewEditor.ShouldRenderNode(dn.type)) continue;
                     ImVec2 screenPos, parentScreenPos;
                     if (WorldToScreen(dn.pos, screenPos)) {
                         if (dn.hasParent && WorldToScreen(dn.parentPos, parentScreenPos)) { drawList->AddLine(parentScreenPos, screenPos, IM_COL32(200, 200, 200, 50), 1.0f); }
-                        ImU32 nodeCol = IM_COL32(200, 200, 200, 150); bool showName = hm->debugSettings.showVanillaNames; bool showAxis = hm->debugSettings.showVanillaAxes;
-                        if (dn.type == DebugNodeType::kCME) { nodeCol = IM_COL32(255, 255, 0, 255); showName = hm->debugSettings.showCMENames; showAxis = hm->debugSettings.showCMEAaxes; }
-                        else if (dn.type == DebugNodeType::kMOV) { nodeCol = IM_COL32(0, 255, 255, 255); showName = hm->debugSettings.showMOVNames; showAxis = hm->debugSettings.showMOVAxes; }
+                        ImU32 nodeCol = IM_COL32(200, 200, 200, 150); bool showName = debugSettings.showVanillaNames; bool showAxis = debugSettings.showVanillaAxes;
+                        if (dn.type == DebugNodeType::kCME) { nodeCol = IM_COL32(255, 255, 0, 255); showName = debugSettings.showCMENames; showAxis = debugSettings.showCMEAaxes; }
+                        else if (dn.type == DebugNodeType::kMOV) { nodeCol = IM_COL32(0, 255, 255, 255); showName = debugSettings.showMOVNames; showAxis = debugSettings.showMOVAxes; }
 
-                        bool isSelected = false;
-                        if (dn.type == DebugNodeType::kCME && dn.name == "IAD_CME_" + s_selectedNode) isSelected = true;
-                        if (dn.type == DebugNodeType::kMOV && dn.name == "IAD_MOV_" + s_selectedSlot) isSelected = true;
+						const bool isSelected =
+							(dn.type == DebugNodeType::kCME && s_nodeState.selection.IsSelected(dn.name)) ||
+							(dn.type == DebugNodeType::kMOV && s_slotState.selection.IsSelected(dn.name));
                         float baseRadius = (dn.type == DebugNodeType::kVanilla) ? 2.0f : 4.0f;
                         if (isSelected) {
                             float time = static_cast<float>(ImGui::GetTime()); float pulse = (sinf(time * 8.0f) + 1.0f) * 0.5f; nodeCol = IM_COL32(255, 128, 0, 255);
@@ -747,8 +806,8 @@ namespace IAD::UI {
 
                         if (showAxis || isSelected) {
                             float axisLen = isSelected ? 18.0f : 8.0f; ImVec2 pX, pY, pZ;
-                            RE::NiPoint3 ax = hm->debugSettings.useLocalAxesSpace ? dn.axisX : RE::NiPoint3{ 1, 0, 0 }; RE::NiPoint3 ay = hm->debugSettings.useLocalAxesSpace ? dn.axisY : RE::NiPoint3{ 0, 1, 0 }; RE::NiPoint3 az = hm->debugSettings.useLocalAxesSpace ? dn.axisZ : RE::NiPoint3{ 0, 0, 1 };
-                            if (hm->debugSettings.showCMEAaxes || hm->debugSettings.showMOVAxes) {
+                            RE::NiPoint3 ax = debugSettings.useLocalAxesSpace ? dn.axisX : RE::NiPoint3{ 1, 0, 0 }; RE::NiPoint3 ay = debugSettings.useLocalAxesSpace ? dn.axisY : RE::NiPoint3{ 0, 1, 0 }; RE::NiPoint3 az = debugSettings.useLocalAxesSpace ? dn.axisZ : RE::NiPoint3{ 0, 0, 1 };
+                            if (debugSettings.showCMEAaxes || debugSettings.showMOVAxes || debugSettings.worldPreviewEdit) {
                                 RE::NiPoint3 wX = { dn.pos.x + ax.x * axisLen, dn.pos.y + ax.y * axisLen, dn.pos.z + ax.z * axisLen }; RE::NiPoint3 wY = { dn.pos.x + ay.x * axisLen, dn.pos.y + ay.y * axisLen, dn.pos.z + ay.z * axisLen }; RE::NiPoint3 wZ = { dn.pos.x + az.x * axisLen, dn.pos.y + az.y * axisLen, dn.pos.z + az.z * axisLen };
                                 float thickX = (isSelected && hm->activeUIItemAxis == ActiveAxis::kX) ? 6.0f : (isSelected ? 3.0f : 2.0f); float thickY = (isSelected && hm->activeUIItemAxis == ActiveAxis::kY) ? 6.0f : (isSelected ? 3.0f : 2.0f); float thickZ = (isSelected && hm->activeUIItemAxis == ActiveAxis::kZ) ? 6.0f : (isSelected ? 3.0f : 2.0f);
                                 ImU32 colX = (isSelected && hm->activeUIItemAxis == ActiveAxis::kX) ? IM_COL32(255, 150, 150, 255) : IM_COL32(255, 50, 50, 255); ImU32 colY = (isSelected && hm->activeUIItemAxis == ActiveAxis::kY) ? IM_COL32(150, 255, 150, 255) : IM_COL32(50, 255, 50, 255); ImU32 colZ = (isSelected && hm->activeUIItemAxis == ActiveAxis::kZ) ? IM_COL32(150, 200, 255, 255) : IM_COL32(50, 100, 255, 255);
@@ -770,9 +829,27 @@ namespace IAD::UI {
                         }
                     }
                 }
+
+                }
+                else {
+                    previewEditor.RenderOverlay(
+                        drawList,
+                        debugNodes,
+                        debugBoundSpheres,
+                        WorldToScreen);
+                    previewEditor.HandleInput(
+                        debugNodes,
+                        debugBoundSpheres,
+                        WorldToScreen);
+                }
             }
         }
+
+        UIWorldPreviewSession::GetSingleton().Update(
+            m_isVisible.load(std::memory_order_acquire) && debugSettings.worldPreviewEdit,
+            UIWorldPreviewEditor::GetSingleton().IsGizmoInteractionActive());
         DrawSplashScreen();
+        UICommitManager::GetSingleton().FlushIfDue();
         ImGui::Render();
         if (m_pContext) { ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); }
     }
@@ -819,9 +896,9 @@ namespace IAD::UI {
 				modifiersMatch(playerBlockModifier) && wp == playerBlockHotkey) {
                 const auto togglePlayerDisplayBlock = []() {
                     auto* runtimeConfig = ConfigManager::GetSingleton();
+                    std::lock_guard<std::recursive_mutex> configLock(runtimeConfig->_configMutex);
                     runtimeConfig->SetPlayerDisplaysBlocked(!runtimeConfig->IsPlayerDisplaysBlocked());
-                    runtimeConfig->SaveConfig();
-                    HolsterManager::GetSingleton()->ForceRefreshAll();
+                    UIEditCoordinator::RequestConfigChange();
                 };
                 if (auto* taskInterface = F4SE::GetTaskInterface()) {
                     taskInterface->AddTask(togglePlayerDisplayBlock);
@@ -837,41 +914,46 @@ namespace IAD::UI {
             else if (wp == VK_ESCAPE) { imGuiMgr.ToggleDisplay(); return true; }
         }
 
+        const bool editorVisible = imGuiMgr.m_isVisible.load(std::memory_order_acquire);
+        if (!editorVisible) {
+            // Keep the editor's hidden Win32 backend from consuming IME commit
+            // messages (notably WM_IME_COMPOSITION) before other game UI mods see them.
+            // The editor hotkeys have already been handled above.
+            return CallWindowProc(m_originalWndProc, hw, msg, wp, lp);
+        }
+
+        ImGuiIO* io = nullptr;
         if (ImGui::GetCurrentContext()) {
             ImGui_ImplWin32_WndProcHandler(hw, msg, wp, lp);
+            io = &ImGui::GetIO();
         }
+        const bool isMouseMessage = (msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST) ||
+            msg == WM_MOUSEWHEEL || msg == WM_MOUSEHWHEEL;
+        const bool isKeyboardMessage = (msg >= WM_KEYFIRST && msg <= WM_KEYLAST) || msg == WM_CHAR;
+        const bool captureMouse = editorVisible || (io && io->WantCaptureMouse);
+        const bool captureKeyboard = editorVisible || (io && (io->WantCaptureKeyboard || io->WantTextInput));
 
-        if (imGuiMgr.m_isVisible) {
-            if (msg == WM_INPUT) {
-                RAWINPUT raw;
-                UINT dwSize = sizeof(RAWINPUT);
-                if (GetRawInputData((HRAWINPUT)lp, RID_INPUT, &raw, &dwSize, sizeof(RAWINPUTHEADER)) != (UINT)-1) {
-                    if (raw.header.dwType == RIM_TYPEKEYBOARD) {
-                        if (raw.data.keyboard.Flags & RI_KEY_BREAK) {
-                            return CallWindowProc(m_originalWndProc, hw, msg, wp, lp);
-                        }
-                    }
-                }
-                return true;
-            }
-
-            if ((msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST) || (msg >= WM_KEYFIRST && msg <= WM_KEYLAST)) {
-                if (msg == WM_KEYUP || msg == WM_SYSKEYUP) {
-                    return CallWindowProc(m_originalWndProc, hw, msg, wp, lp);
-                }
-                return true;
-            }
-            if (msg == WM_MOUSEWHEEL || msg == WM_MOUSEHWHEEL || msg == WM_CHAR) return true;
-        }
-        else {
-            if (ImGui::GetCurrentContext()) {
-                ImGuiIO& io = ImGui::GetIO();
-                if (io.WantCaptureMouse) {
-                    if ((msg >= WM_LBUTTONDOWN && msg <= WM_RBUTTONDBLCLK) || msg == WM_MOUSEWHEEL) {
-                        return true;
+        if (msg == WM_INPUT) {
+            RAWINPUT raw;
+            UINT dwSize = sizeof(RAWINPUT);
+            if (GetRawInputData((HRAWINPUT)lp, RID_INPUT, &raw, &dwSize, sizeof(RAWINPUTHEADER)) != (UINT)-1) {
+                if (raw.header.dwType == RIM_TYPEKEYBOARD) {
+                    if (raw.data.keyboard.Flags & RI_KEY_BREAK) {
+                        return CallWindowProc(m_originalWndProc, hw, msg, wp, lp);
                     }
                 }
             }
+            return true;
+        }
+
+        if (isMouseMessage && captureMouse) {
+            return true;
+        }
+        if (isKeyboardMessage && captureKeyboard) {
+            if (msg == WM_KEYUP || msg == WM_SYSKEYUP) {
+                return CallWindowProc(m_originalWndProc, hw, msg, wp, lp);
+            }
+            return true;
         }
 
         return CallWindowProc(m_originalWndProc, hw, msg, wp, lp);

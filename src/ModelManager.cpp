@@ -346,6 +346,58 @@ namespace IAD {
 		}
 	}
 
+	RE::NiPointer<RE::NiAVObject> ModelManager::CloneRenderOnly(RE::NiAVObject* a_source, const ModelCleanupPolicy& a_cleanupPolicy)
+	{
+		if (!a_source) return nullptr;
+
+		RE::NiCloningProcess cloning;
+		cloning.copyType = RE::NiCloningProcess::CopyType::kCopyExact;
+		cloning.appendChar = '$';
+		cloning.scale = { 1.0f, 1.0f, 1.0f };
+
+		// Controllers can retain raw links into the source object graph. Detach them
+		// during cloning so the render-only copy cannot inherit those links, then
+		// restore the source graph before returning.
+		std::vector<std::pair<RE::NiAVObject*, RE::NiPointer<RE::NiTimeController>>> detachedControllers;
+		std::function<void(RE::NiAVObject*)> detachControllers = [&](RE::NiAVObject* a_object) {
+			if (!a_object) return;
+			if (auto* objectNet = static_cast<RE::NiObjectNET*>(a_object); objectNet->controllers) {
+				detachedControllers.emplace_back(a_object, objectNet->controllers);
+				objectNet->controllers.reset();
+			}
+			if (auto* node = a_object->IsNode()) {
+				for (auto& child : node->children) {
+					if (child) detachControllers(child.get());
+				}
+			}
+		};
+		detachControllers(a_source);
+
+		RE::NiObject* cloneObject = a_source->CreateClone(cloning);
+		a_source->ProcessClone(cloning);
+		for (auto& [object, controller] : detachedControllers) {
+			if (object) {
+				static_cast<RE::NiObjectNET*>(object)->controllers = controller;
+			}
+		}
+
+		auto cleanupPolicy = a_cleanupPolicy;
+		cleanupPolicy.disableHavok = true;
+		cleanupPolicy.removeUI = true;
+		cleanupPolicy.removeSounds = true;
+		if (!cloneObject) return nullptr;
+
+		auto* clone = static_cast<RE::NiAVObject*>(cloneObject);
+		RenameClonedNodes(clone);
+		clone->local.scale = 1.0f;
+		FreezeToStaticStatue(clone, true, cleanupPolicy);
+		CullBloodNodes(clone, cleanupPolicy);
+
+		RE::NiUpdateData updateData{};
+		clone->Update(updateData);
+		return RE::NiPointer<RE::NiAVObject>(clone);
+	}
+
 	void ModelManager::FreezeToStaticStatue(RE::NiAVObject* a_node, bool a_isRoot, const ModelCleanupPolicy& a_cleanupPolicy) {
 		if (!a_node) return;
 
@@ -838,21 +890,8 @@ namespace IAD {
 				return;
 			}
 
-			RE::NiCloningProcess cp;
-			cp.copyType = RE::NiCloningProcess::CopyType::kCopyExact;
-			cp.appendChar = '\0';
-			cp.scale = { 1.0f, 1.0f, 1.0f };
-
-			auto clone = static_cast<RE::NiAVObject*>(model->CreateClone(cp));
-			if (clone) {
-				clone->local.scale = 1.0f;
-				FreezeToStaticStatue(clone, true, req.cleanupPolicy);
-				CullBloodNodes(clone, req.cleanupPolicy);
-				if (req.callback) req.callback(clone);
-			}
-			else {
-				if (req.callback) req.callback(nullptr);
-			}
+			auto clone = CloneRenderOnly(model.get(), req.cleanupPolicy);
+			if (req.callback) req.callback(clone.get());
 			return;
 		}
 
@@ -865,7 +904,7 @@ namespace IAD {
 		auto assembledModel = req.tempRef->Load3D(req.loadFirstPersonModel);
 		req.tempRef->extraList = req.originalExtra;
 
-		RE::NiAVObject* finalClone = nullptr;
+		RE::NiPointer<RE::NiAVObject> finalClone;
 
 		if (assembledModel) {
 			assembledModel->SetAppCulled(true);
@@ -873,48 +912,26 @@ namespace IAD {
 			assembledModel->local.translate = { 0, 0, 0 };
 			assembledModel->local.rotate.MakeIdentity();
 
-			RE::NiCloningProcess cp;
-			cp.copyType = RE::NiCloningProcess::CopyType::kCopyExact;
-			cp.appendChar = '\0';
-			cp.scale = { 1.0f, 1.0f, 1.0f };
-
-			finalClone = static_cast<RE::NiAVObject*>(assembledModel->CreateClone(cp));
+			finalClone = CloneRenderOnly(assembledModel, req.cleanupPolicy);
 
 			if (finalClone) {
-				RenameClonedNodes(finalClone);
-				finalClone->local.scale = 1.0f;
-
-				FreezeToStaticStatue(finalClone, true, req.cleanupPolicy);
-				CullBloodNodes(finalClone, req.cleanupPolicy);
-
 				if (req.isMagazineExtraction) {
-					auto magNode = ExtractMagazineNode(finalClone);
+					auto magNode = ExtractMagazineNode(finalClone.get());
 					if (magNode) {
-						RE::NiCloningProcess cp2;
-						cp2.copyType = RE::NiCloningProcess::CopyType::kCopyExact;
-						cp2.appendChar = '\0';
-						cp2.scale = { 1.0f, 1.0f, 1.0f };
-
-						auto clonedMag = static_cast<RE::NiAVObject*>(magNode->CreateClone(cp2));
+						auto clonedMag = CloneRenderOnly(magNode, req.cleanupPolicy);
 						if (clonedMag) {
-							RenameClonedNodes(clonedMag);
-							FreezeToStaticStatue(clonedMag, true, req.cleanupPolicy);
 							clonedMag->local.translate = { 0, 0, 0 };
 							clonedMag->local.rotate.MakeIdentity();
 							clonedMag->local.scale = 1.0f;
 							clonedMag->SetAppCulled(false);
-
-							RE::NiPointer<RE::NiAVObject> trash(finalClone);
-							finalClone = clonedMag;
+							finalClone = std::move(clonedMag);
 						}
 						else {
-							RE::NiPointer<RE::NiAVObject> trash(finalClone);
-							finalClone = nullptr;
+							finalClone.reset();
 						}
 					}
 					else {
-						RE::NiPointer<RE::NiAVObject> trash(finalClone);
-						finalClone = nullptr;
+						finalClone.reset();
 					}
 				}
 			}
@@ -931,7 +948,7 @@ namespace IAD {
 		req.tempRef->SetWantsDelete(true);
 
 		if (req.callback) {
-			req.callback(finalClone);
+			req.callback(finalClone.get());
 		}
 	}
 

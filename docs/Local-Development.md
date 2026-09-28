@@ -48,6 +48,49 @@ The current test-only `IAD_Test_10mm.json` profile and the
 `10mm_R_thigh_f.nif` test mesh are not part of the public repository or release
 archive.
 
+The public repository also carries the canonical `DefaultConfig.json`. It is
+the shipped first-launch display setup, while `ActiveConfig.json` remains a
+runtime-generated user copy. When the current MO2 `ActiveConfig.json` contains
+new formal slot, node, or custom rules, promote its `Data` section into the
+default snapshot from the outer project directory:
+
+```powershell
+.\scripts\Update-DefaultConfig.ps1 `
+    -SourceSnapshot 'D:\path\to\ImmersiveArsenalDisplays Dev\F4SE\Plugins\ImmersiveArsenalDisplays\ActiveConfig.json' `
+    -FallbackSnapshot '.\data\F4SE\Plugins\ImmersiveArsenalDisplays\Exports\IAD_DefaultConfigUser.json'
+```
+
+The promotion deliberately excludes `RuntimeSelection` and `Debug` session
+state. It retains the exported form-filter profiles when ActiveConfig does not
+serialize them, preserves formal Data entries, removes the known treatment-kit
+test entry and copied editor node, and clears the excluded `10mm_R_thigh_f.nif`
+test asset reference. Review those exclusions if a new test entry is intended
+to become a release feature. On repeated promotions, formal custom entries
+already present in the canonical default are retained by target FormID, while
+the current ActiveConfig wins when the same item exists in both files.
+
+The default includes dedicated power-armor states. Each CME node switches to
+the vanilla `*_Armor` host nodes while the model transform is stored separately
+from the normal-body transform, so later preview edits do not cross-contaminate
+the two equipment contexts.
+
+## Build A Nexus Release Candidate
+
+Release packaging is driven by an explicit allow-list from the outer project
+data image. It keeps the developer's `ActiveConfig.json`, `IAD_Settings.json`,
+and `ImmersiveArsenalDisplays.ini`, along with test profiles and PDB,
+NIF, and Papyrus source out of the archive while retaining the default display
+snapshot required for a first launch:
+
+```powershell
+..\scripts\package-release.ps1 -Version 3.0.0 -PackageName ImmersiveArsenalDisplays-3.0.0-Nexus-candidate -Force
+```
+
+The script writes the candidate directory and ZIP under the workspace `dist`
+directory and records the DLL SHA256 in `Release-Manifest.txt`. This is a
+release candidate until the remaining in-game checklist in
+`World-Preview-Editor-Implementation-Plan.md` is accepted.
+
 ## Update GitHub
 
 Always inspect the source repository before editing it:

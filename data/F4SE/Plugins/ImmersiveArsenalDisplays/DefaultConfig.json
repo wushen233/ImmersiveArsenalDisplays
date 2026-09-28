@@ -1,0 +1,6575 @@
+{
+  "format": "IAD.GlobalSnapshot",
+  "version": 1,
+  "flags": 4095,
+  "Data": {
+    "Customs": {
+      "Actor": {
+        "00000000": {}
+      },
+      "Global": {
+        "00000000": {
+          "专属: 军用步枪": {
+            "AlwaysUnload": true,
+            "CountMax": 0,
+            "CountMin": 1,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "KeepHolsterWhenDrawn": true,
+            "LastEquippedMode": true,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ModelGroups": [],
+            "ModelSwapPath": "",
+            "OverrideMeshTransform": false,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "Priority": 0,
+            "SpawnChance": 100.0,
+            "StateMachine": [],
+            "TargetFormID": 4261811951,
+            "TargetNode": "",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "专属: 汽油弹": {
+            "AlwaysUnload": false,
+            "CountMax": 0,
+            "CountMin": 1,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": false,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "KeepHolsterWhenDrawn": true,
+            "LastEquippedMode": false,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ModelGroups": [],
+            "ModelSwapPath": "",
+            "OverrideMeshTransform": false,
+            "OverridePhysics": true,
+            "OverrideTransform": true,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": false,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": true,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -10.0,
+                -5.0,
+                -10.0
+              ],
+              "MaxOffsetP": [
+                10.0,
+                5.0,
+                10.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                0.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "Priority": 0,
+            "SpawnChance": 100.0,
+            "StateMachine": [],
+            "TargetFormID": 1098694,
+            "TargetNode": "",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                -20.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                90.0,
+                180.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                -20.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                90.0,
+                180.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "专属: 破片手榴弹": {
+            "AlwaysUnload": false,
+            "CountMax": 0,
+            "CountMin": 1,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": false,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "KeepHolsterWhenDrawn": true,
+            "LastEquippedMode": false,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ModelGroups": [],
+            "ModelSwapPath": "",
+            "OverrideMeshTransform": false,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "Priority": 0,
+            "SpawnChance": 100.0,
+            "StateMachine": [],
+            "TargetFormID": 977901,
+            "TargetNode": "",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "专属: 聚变核心": {
+            "AlwaysUnload": false,
+            "CountMax": 0,
+            "CountMin": 1,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "KeepHolsterWhenDrawn": true,
+            "LastEquippedMode": false,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ModelGroups": [],
+            "ModelSwapPath": "",
+            "OverrideMeshTransform": false,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "Priority": 0,
+            "SpawnChance": 100.0,
+            "StateMachine": [],
+            "TargetFormID": 483300,
+            "TargetNode": "",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "专属: 防暴盾牌": {
+            "AlwaysUnload": true,
+            "CountMax": 0,
+            "CountMin": 1,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "KeepHolsterWhenDrawn": true,
+            "LastEquippedMode": false,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ModelGroups": [],
+            "ModelSwapPath": "",
+            "OverrideMeshTransform": false,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "Priority": 0,
+            "SpawnChance": 100.0,
+            "StateMachine": [],
+            "TargetFormID": 234883072,
+            "TargetNode": "",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "专属: 打击者45型冲锋枪": {
+            "AlwaysUnload": false,
+            "Animation": {
+              "AnimationEvent": "",
+              "AttachSubGraphs": false,
+              "DisableBehaviorGraphAnims": true,
+              "ForwardAnimationEvents": false,
+              "PlaySequence": false,
+              "SequenceName": ""
+            },
+            "CountMax": 0,
+            "CountMin": 1,
+            "DisableHavok": true,
+            "DisableIfEquipped": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "DisplayFavoritesOnly": true,
+            "DisplayFormWithoutInventory": false,
+            "EffectShader": {
+              "Alpha": true,
+              "AlphaMultiplier": 1.0,
+              "BaseFillAlpha": 1.0,
+              "BaseFillScale": 1.0,
+              "BaseRimAlpha": 1.0,
+              "BaseTexturePath": "",
+              "BlockOutTexturePath": "",
+              "EdgeExponent": 1.0,
+              "Enabled": false,
+              "FillColor": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+              ],
+              "Force": false,
+              "Lighting": false,
+              "PaletteTexturePath": "",
+              "RimColor": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "TargetRoot": true
+            },
+            "Enabled": false,
+            "ExtraItems": [],
+            "ExtractMagazine": false,
+            "Geometry_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Geometry_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "GroupMode": false,
+            "HideGeometry": false,
+            "HideIfUsingFurniture": false,
+            "HideLayingDown": false,
+            "HideLight": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "IgnorePlayer": false,
+            "InventoryConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Invisible": false,
+            "KeepHolsterWhenDrawn": true,
+            "KeepTorchFlame": false,
+            "LastEquippedBipedSlots": [],
+            "LastEquippedDisableIfBipedSlotOccupied": true,
+            "LastEquippedDisableIfDisplaySlotOccupied": false,
+            "LastEquippedDisplaySlots": [],
+            "LastEquippedFallbackToAnySlot": true,
+            "LastEquippedFallbackToRecentAcquired": false,
+            "LastEquippedFallbackToSlotted": false,
+            "LastEquippedFilterConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "LastEquippedMode": false,
+            "LastEquippedPrioritizeRecentAcquiredTypes": true,
+            "LastEquippedPrioritizeRecentBipedSlots": true,
+            "LastEquippedPrioritizeRecentDisplaySlot": true,
+            "LastEquippedRecentAcquiredFormTypes": [],
+            "LastEquippedSkipOccupiedBipedSlots": false,
+            "LastEquippedSkipOccupiedDisplaySlots": false,
+            "Light": {
+              "CastShadows": false,
+              "Diffuse": [
+                1.0,
+                0.9200000166893005,
+                0.75,
+                1.0
+              ],
+              "Dimmer": 1.0,
+              "DontLightLandscape": false,
+              "DontLightWater": false,
+              "Enabled": false,
+              "FieldOfView": 60.0,
+              "Radius": 128.0,
+              "ShadowDepthBias": 0.0,
+              "TargetSelf": false,
+              "Transform": {
+                "Pivot": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Pos": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Rot": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "Scale": 1.0
+              }
+            },
+            "Load1pWeaponModel": false,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ModelGroups": [],
+            "ModelSwapFormID": 0,
+            "ModelSwapFormIDVariable": "",
+            "ModelSwapPath": "",
+            "ModelSwapPathVariable": "",
+            "ModelSwapUseRuntimeVariable": false,
+            "OverrideEquipmentMode": false,
+            "OverrideGeometryTransform": false,
+            "OverrideMeshTransform": false,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "Priority": 0,
+            "RemoveEditorMarker": true,
+            "RemoveProjectileTracers": true,
+            "RemoveScabbard": false,
+            "RuntimeTargetFormVariable": "",
+            "SelectInventoryRandom": false,
+            "SelectInventoryStrongest": false,
+            "SpawnChance": 100.0,
+            "StateMachine": [],
+            "TargetDisplaySlot": "",
+            "TargetFormID": 453009801,
+            "TargetNode": "",
+            "UseProjectileForAmmo": false,
+            "UseRuntimeTargetForm": false,
+            "UseWorldModel": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          }
+        }
+      },
+      "NPC": {
+        "00000000": {}
+      },
+      "Race": {
+        "00000000": {}
+      }
+    },
+    "Nodes": {
+      "Actor": {
+        "00000000": {},
+        "00000014": {}
+      },
+      "Global": {
+        "00000000": {
+          "IAD_CME_1H_Melee_L": {
+            "AbsolutePosition": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "FallbackHosts": [
+              "SPINE2"
+            ],
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": false,
+            "OverridePhysics": true,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": false,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": true,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -10.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                5.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 1.0,
+              "MaxRoll": -1.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 1.0,
+              "MinPitch": -1.0,
+              "MinRoll": -1.0,
+              "MinYaw": -1.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                -0.5,
+                0.5,
+                0.5
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用骨骼节点",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideTargetNode": true,
+                "TargetNode": "Pelvis_Armor"
+              }
+            ],
+            "WeaponAdjust": true,
+            "WeightAdjust": true,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                -12.5,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                -12.5,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "IAD_CME_1H_Melee_R": {
+            "AbsolutePosition": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "FallbackHosts": [
+              "SPINE2"
+            ],
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": false,
+            "OverridePhysics": true,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": false,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": true,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -10.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                5.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 1.0,
+              "MaxRoll": -1.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 1.0,
+              "MinPitch": -1.0,
+              "MinRoll": -1.0,
+              "MinYaw": -1.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                -0.5,
+                0.5,
+                0.5
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用骨骼节点",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideTargetNode": true,
+                "TargetNode": "Pelvis_Armor"
+              }
+            ],
+            "WeaponAdjust": true,
+            "WeightAdjust": true,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                12.5,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                12.5,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "IAD_CME_Back": {
+            "AbsolutePosition": false,
+            "DisplayConditionTree": {
+              "Children": [
+                {
+                  "Expected": true,
+                  "IsAnd": true,
+                  "IsGroup": false,
+                  "IsNot": true,
+                  "Keyword": "54",
+                  "Keyword2": "",
+                  "Type": "HasEquippedBipedSlot"
+                }
+              ],
+              "IsAnd": false,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "FallbackHosts": [
+              "Chest"
+            ],
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": false,
+            "OverridePhysics": true,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 1.0,
+              "Disabled": false,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": true,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.5,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                0.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.399999618530273,
+                -20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 0.0,
+              "MaxRoll": 0.5,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": -30.0,
+              "MinPitch": -0.5,
+              "MinRoll": -0.5,
+              "MinYaw": -31.0,
+              "Resistance": 1.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 1.0,
+              "SpringSlackOffset": 1.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "StateMachine": [
+              {
+                "AbsolutePosition": false,
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "54",
+                      "Keyword2": "",
+                      "Type": "HasEquippedBipedSlot"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "Description": "背包",
+                "HideModel": false,
+                "IndependentMeshTransform": {
+                  "Pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Pos": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Rot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Scale": 1.0
+                },
+                "IndependentPhysics": {
+                  "BoxParams": {
+                    "PenBiasDepthLimit": 20000.0,
+                    "PenBiasFactor": 1.0,
+                    "RestitutionCoefficient": 0.0,
+                    "VelocityResponseScale": 0.10000000149011612
+                  },
+                  "CogOffset": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Damping": 0.949999988079071,
+                  "Disabled": true,
+                  "DrawConstraints": false,
+                  "DrawPendulum": false,
+                  "EnableAngularConstraint": false,
+                  "EnableBoxConstraint": false,
+                  "EnableSphereConstraint": false,
+                  "GravityBias": 1200.0,
+                  "Linear": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Mass": 1.0,
+                  "MaxOffsetBoxFriction": 0.02500000037252903,
+                  "MaxOffsetN": [
+                    -20.0,
+                    -20.0,
+                    -20.0
+                  ],
+                  "MaxOffsetP": [
+                    20.0,
+                    20.0,
+                    20.0
+                  ],
+                  "MaxOffsetSphereFriction": 0.02500000037252903,
+                  "MaxOffsetSphereOffset": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "MaxOffsetSphereRadius": 20.0,
+                  "MaxPitch": 60.0,
+                  "MaxRoll": 45.0,
+                  "MaxVelocity": 20000.0,
+                  "MaxYaw": 45.0,
+                  "MinPitch": -15.0,
+                  "MinRoll": -45.0,
+                  "MinYaw": -45.0,
+                  "Resistance": 0.0,
+                  "Rotational": [
+                    1.0,
+                    1.0,
+                    1.0
+                  ],
+                  "SphereParams": {
+                    "PenBiasDepthLimit": 20000.0,
+                    "PenBiasFactor": 1.0,
+                    "RestitutionCoefficient": 0.0,
+                    "VelocityResponseScale": 0.10000000149011612
+                  },
+                  "SpringSlackMag": 0.0,
+                  "SpringSlackOffset": 0.0,
+                  "Stiffness": 2.0,
+                  "Stiffness2": 1.0,
+                  "VisualProbeLength": 40.0
+                },
+                "IndependentTransform": {
+                  "Pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Pos": [
+                    0.0,
+                    -10.0,
+                    0.0
+                  ],
+                  "Rot": [
+                    0.0,
+                    0.0,
+                    -10.0
+                  ],
+                  "Scale": 1.0
+                },
+                "OverrideMeshTransform": false,
+                "OverridePhysics": false,
+                "OverrideTargetNode": false,
+                "OverrideTransform": true,
+                "TargetNode": "",
+                "TargetPhysicsPreset": "",
+                "TargetTransformPreset": "Preset_Backpack",
+                "UsePhysicsPreset": false,
+                "UseTransformPreset": false,
+                "WeaponAdjust": false,
+                "WeightAdjust": false
+              },
+              {
+                "Description": "动力甲：专用骨骼节点",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideTargetNode": true,
+                "TargetNode": "Back_Armor"
+              }
+            ],
+            "WeaponAdjust": true,
+            "WeightAdjust": true,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                -15.0,
+                15.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                -15.0,
+                15.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "IAD_CME_BackPack": {
+            "AbsolutePosition": false,
+            "DisplayConditionTree": {
+              "Children": [
+                {
+                  "Expected": true,
+                  "IsAnd": true,
+                  "IsGroup": false,
+                  "IsNot": false,
+                  "Keyword": "54",
+                  "Keyword2": "",
+                  "Type": "HasEquippedBipedSlot"
+                }
+              ],
+              "IsAnd": false,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "FallbackHosts": [
+              "Chest"
+            ],
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": false,
+            "OverridePhysics": true,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": false,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": true,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 0.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 5.0,
+              "MinPitch": -10.0,
+              "MinRoll": -45.0,
+              "MinYaw": -5.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 62.0
+            },
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用骨骼节点",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideTargetNode": true,
+                "TargetNode": "Back_Armor"
+              }
+            ],
+            "WeaponAdjust": true,
+            "WeightAdjust": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                -22.5,
+                8.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                -22.5,
+                8.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "IAD_CME_BackPack_L": {
+            "AbsolutePosition": false,
+            "DisplayConditionTree": {
+              "Children": [
+                {
+                  "Expected": true,
+                  "IsAnd": true,
+                  "IsGroup": false,
+                  "IsNot": false,
+                  "Keyword": "54",
+                  "Keyword2": "",
+                  "Type": "HasEquippedBipedSlot"
+                }
+              ],
+              "IsAnd": false,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "FallbackHosts": [
+              "Chest"
+            ],
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": false,
+            "OverridePhysics": true,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": false,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": true,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -5.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                5.0,
+                5.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 5.0,
+              "MaxRoll": 5.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 0.0,
+              "MinPitch": -15.0,
+              "MinRoll": 5.0,
+              "MinYaw": -10.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                -1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用骨骼节点",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideTargetNode": true,
+                "TargetNode": "Back_Armor"
+              }
+            ],
+            "WeaponAdjust": true,
+            "WeightAdjust": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                -12.5,
+                -15.0,
+                12.5
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                -12.5,
+                -15.0,
+                12.5
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "IAD_CME_BackPack_R": {
+            "AbsolutePosition": false,
+            "DisplayConditionTree": {
+              "Children": [
+                {
+                  "Expected": true,
+                  "IsAnd": true,
+                  "IsGroup": false,
+                  "IsNot": false,
+                  "Keyword": "54",
+                  "Keyword2": "",
+                  "Type": "HasEquippedBipedSlot"
+                }
+              ],
+              "IsAnd": false,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "FallbackHosts": [
+              "Chest"
+            ],
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": false,
+            "OverridePhysics": true,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": false,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": true,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -5.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                5.0,
+                5.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 5.0,
+              "MaxRoll": 5.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 10.0,
+              "MinPitch": -15.0,
+              "MinRoll": 5.0,
+              "MinYaw": 0.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用骨骼节点",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideTargetNode": true,
+                "TargetNode": "Back_Armor"
+              }
+            ],
+            "WeaponAdjust": true,
+            "WeightAdjust": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                12.5,
+                -15.0,
+                12.5
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                12.5,
+                -15.0,
+                12.5
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "IAD_CME_Grenade": {
+            "AbsolutePosition": false,
+            "DisplayConditionTree": {
+              "Children": [
+                {
+                  "Expected": true,
+                  "IsAnd": true,
+                  "IsGroup": false,
+                  "IsNot": false,
+                  "Keyword": "52",
+                  "Keyword2": "",
+                  "Type": "HasEquippedBipedSlot"
+                }
+              ],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "FallbackHosts": [
+              "SPINE2"
+            ],
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": false,
+            "OverridePhysics": true,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": false,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": true,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -10.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                5.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 1.0,
+              "MaxRoll": -1.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 1.0,
+              "MinPitch": -1.0,
+              "MinRoll": -1.0,
+              "MinYaw": -1.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                -0.5,
+                0.5,
+                0.5
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用骨骼节点",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideTargetNode": true,
+                "TargetNode": "Pelvis_Armor"
+              }
+            ],
+            "WeaponAdjust": true,
+            "WeightAdjust": true,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                7.0,
+                -11.5,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                7.0,
+                -11.5,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "IAD_CME_LLeg_Thigh": {
+            "AbsolutePosition": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "FallbackHosts": [
+              "LLeg_Thigh"
+            ],
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": false,
+            "OverridePhysics": true,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 1.0
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": true,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                0.0,
+                -10.0,
+                -10.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                10.0,
+                5.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 200000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                0.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用骨骼节点",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideTargetNode": true,
+                "TargetNode": "LLeg_Thigh_Armor"
+              }
+            ],
+            "WeaponAdjust": true,
+            "WeightAdjust": true,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                -9.5,
+                1.0,
+                -12.0
+              ],
+              "Rot": [
+                -20.0,
+                -5.0,
+                -8.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                -9.5,
+                1.0,
+                -12.0
+              ],
+              "Rot": [
+                -20.0,
+                -5.0,
+                -8.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "IAD_CME_Magazine": {
+            "AbsolutePosition": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "FallbackHosts": [
+              "SPINE2"
+            ],
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": false,
+            "OverridePhysics": true,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": false,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": true,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 1.0,
+              "MaxRoll": -1.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 1.0,
+              "MinPitch": 0.0,
+              "MinRoll": -1.0,
+              "MinYaw": -1.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 13.5
+            },
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用骨骼节点",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideTargetNode": true,
+                "TargetNode": "Back_Armor"
+              }
+            ],
+            "WeaponAdjust": true,
+            "WeightAdjust": true,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                -7.0,
+                8.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                -7.0,
+                8.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "IAD_CME_RLeg_Thigh": {
+            "AbsolutePosition": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "FallbackHosts": [
+              "RLeg_Thigh"
+            ],
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": false,
+            "OverridePhysics": true,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 1.0
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": true,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                0.0,
+                -10.0,
+                -5.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                10.0,
+                10.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 200000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                0.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用骨骼节点",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideTargetNode": true,
+                "TargetNode": "RLeg_Thigh_Armor"
+              }
+            ],
+            "WeaponAdjust": true,
+            "WeightAdjust": true,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                9.5,
+                1.0,
+                -12.5
+              ],
+              "Rot": [
+                20.0,
+                5.0,
+                -8.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                9.5,
+                1.0,
+                -12.5
+              ],
+              "Rot": [
+                20.0,
+                5.0,
+                -8.0
+              ],
+              "Scale": 1.0
+            }
+          }
+        },
+        "00000001": {},
+        "00000002": {}
+      },
+      "NPC": {
+        "00000000": {}
+      },
+      "Race": {
+        "00000000": {},
+        "00000019": {}
+      }
+    },
+    "Slots": {
+      "Actor": {
+        "00000000": {},
+        "00000014": {}
+      },
+      "Global": {
+        "00000000": {
+          "IAD_MOV_1H_Melee_L": {
+            "AdvancedFilters": {
+              "AllowAmmo": false,
+              "AllowArmor": false,
+              "AllowFood": false,
+              "AllowGun": false,
+              "AllowKeys": false,
+              "AllowMedicine": false,
+              "AllowMelee": false,
+              "AllowOneHanded": true,
+              "AllowShield": false,
+              "AllowThrown": false,
+              "AllowTwoHanded": false,
+              "AllowWater": false,
+              "UseBaseFilters": false
+            },
+            "AllowedFormTypes": [],
+            "AlwaysUnload": true,
+            "AmmoRig": {
+              "Dir": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "DisplayMode": 0,
+              "Dynamic": true,
+              "IsDedicated": false,
+              "MaxMags": 3,
+              "Spacing": 5.0
+            },
+            "CheckCannotWear": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ItemFilter": {
+              "AllowList": [],
+              "DenyAll": false,
+              "DenyList": []
+            },
+            "KeepHolsterWhenDrawn": true,
+            "KeywordGroups": [
+              {
+                "GroupName": "新关键字组",
+                "IsAnd": false,
+                "Keywords": [
+                  "WeaponTypeMelee1H"
+                ]
+              }
+            ],
+            "KeywordMode": 1,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                -180.0,
+                100.0,
+                -40.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                -180.0,
+                100.0,
+                -40.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": true,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "PreferredItems": [],
+            "Priority": 0,
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用模型变换",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideMeshTransform": true,
+                "IndependentMeshTransform": {
+                  "Pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Pos": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Rot": [
+                    -180.0,
+                    100.0,
+                    -40.0
+                  ],
+                  "Scale": 1.0
+                }
+              }
+            ],
+            "TargetNode": "IAD_CME_1H_Melee_L",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                -5.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                180.0,
+                -130.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                -5.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                180.0,
+                -130.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "IAD_MOV_1H_Melee_R": {
+            "AdvancedFilters": {
+              "AllowAmmo": false,
+              "AllowArmor": false,
+              "AllowFood": false,
+              "AllowGun": false,
+              "AllowKeys": false,
+              "AllowMedicine": false,
+              "AllowMelee": false,
+              "AllowOneHanded": true,
+              "AllowShield": false,
+              "AllowThrown": false,
+              "AllowTwoHanded": false,
+              "AllowWater": false,
+              "UseBaseFilters": false
+            },
+            "AllowedFormTypes": [],
+            "AlwaysUnload": true,
+            "AmmoRig": {
+              "Dir": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "DisplayMode": 0,
+              "Dynamic": true,
+              "IsDedicated": false,
+              "MaxMags": 3,
+              "Spacing": 5.0
+            },
+            "CheckCannotWear": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ItemFilter": {
+              "AllowList": [],
+              "DenyAll": false,
+              "DenyList": []
+            },
+            "KeepHolsterWhenDrawn": true,
+            "KeywordGroups": [
+              {
+                "GroupName": "新关键字组",
+                "IsAnd": false,
+                "Keywords": [
+                  "WeaponTypeMelee1H"
+                ]
+              }
+            ],
+            "KeywordMode": 1,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                -180.0,
+                -100.0,
+                40.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                -180.0,
+                -100.0,
+                40.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": true,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "PreferredItems": [],
+            "Priority": 0,
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用模型变换",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideMeshTransform": true,
+                "IndependentMeshTransform": {
+                  "Pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Pos": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Rot": [
+                    -180.0,
+                    -100.0,
+                    40.0
+                  ],
+                  "Scale": 1.0
+                }
+              }
+            ],
+            "TargetNode": "IAD_CME_1H_Melee_R",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "IAD_MOV_Grenade": {
+            "AdvancedFilters": {
+              "AllowAmmo": true,
+              "AllowArmor": false,
+              "AllowFood": false,
+              "AllowGun": false,
+              "AllowKeys": false,
+              "AllowMedicine": false,
+              "AllowMelee": false,
+              "AllowOneHanded": false,
+              "AllowShield": false,
+              "AllowThrown": false,
+              "AllowTwoHanded": false,
+              "AllowWater": false,
+              "UseBaseFilters": false
+            },
+            "AllowedFormTypes": [],
+            "AlwaysUnload": false,
+            "AmmoRig": {
+              "Dir": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "DisplayMode": 0,
+              "Dynamic": true,
+              "IsDedicated": false,
+              "MaxMags": 3,
+              "Spacing": 5.0
+            },
+            "CheckCannotWear": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ItemFilter": {
+              "AllowList": [
+                483300
+              ],
+              "DenyAll": false,
+              "DenyList": []
+            },
+            "KeepHolsterWhenDrawn": true,
+            "KeywordGroups": [],
+            "KeywordMode": 0,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                -90.0,
+                114.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                -90.0,
+                114.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": true,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "PreferredItems": [],
+            "Priority": 0,
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用模型变换",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideMeshTransform": true,
+                "IndependentMeshTransform": {
+                  "Pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Pos": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Rot": [
+                    0.0,
+                    -90.0,
+                    114.0
+                  ],
+                  "Scale": 1.0
+                }
+              }
+            ],
+            "TargetNode": "IAD_CME_Grenade",
+            "UseProjectileForAmmo": true,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "IAD_MOV_Magazine": {
+            "AdvancedFilters": {
+              "AllowAmmo": true,
+              "AllowArmor": false,
+              "AllowFood": false,
+              "AllowGun": false,
+              "AllowKeys": false,
+              "AllowMedicine": false,
+              "AllowMelee": false,
+              "AllowOneHanded": false,
+              "AllowShield": false,
+              "AllowThrown": false,
+              "AllowTwoHanded": false,
+              "AllowWater": false,
+              "UseBaseFilters": true
+            },
+            "AllowedFormTypes": [],
+            "AlwaysUnload": false,
+            "AmmoRig": {
+              "Dir": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "DisplayMode": 0,
+              "Dynamic": true,
+              "IsDedicated": false,
+              "MaxMags": 3,
+              "Spacing": 5.0
+            },
+            "CheckCannotWear": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": false,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ItemFilter": {
+              "AllowList": [],
+              "DenyAll": false,
+              "DenyList": []
+            },
+            "KeepHolsterWhenDrawn": true,
+            "KeywordGroups": [],
+            "KeywordMode": 0,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                90.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                90.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": true,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "PreferredItems": [],
+            "Priority": 0,
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用模型变换",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideMeshTransform": true,
+                "IndependentMeshTransform": {
+                  "Pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Pos": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Rot": [
+                    0.0,
+                    0.0,
+                    90.0
+                  ],
+                  "Scale": 1.0
+                }
+              }
+            ],
+            "TargetNode": "IAD_CME_Magazine",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "IAD_MOV_Shield": {
+            "AdvancedFilters": {
+              "AllowAmmo": true,
+              "AllowArmor": true,
+              "AllowFood": true,
+              "AllowGun": true,
+              "AllowKeys": true,
+              "AllowMedicine": true,
+              "AllowMelee": true,
+              "AllowOneHanded": true,
+              "AllowShield": true,
+              "AllowThrown": true,
+              "AllowTwoHanded": true,
+              "AllowWater": true,
+              "UseBaseFilters": false
+            },
+            "AllowedFormTypes": [],
+            "AlwaysUnload": true,
+            "AmmoRig": {
+              "Dir": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "DisplayMode": 0,
+              "Dynamic": true,
+              "IsDedicated": false,
+              "MaxMags": 3,
+              "Spacing": 5.0
+            },
+            "CheckCannotWear": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ItemFilter": {
+              "AllowList": [],
+              "DenyAll": false,
+              "DenyList": []
+            },
+            "KeepHolsterWhenDrawn": false,
+            "KeywordGroups": [
+              {
+                "GroupName": "新关键字组",
+                "IsAnd": false,
+                "Keywords": [
+                  "AnimsRiotShield"
+                ]
+              }
+            ],
+            "KeywordMode": 1,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                -4.0,
+                -4.0
+              ],
+              "Rot": [
+                -90.0,
+                -90.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                -4.0,
+                -4.0
+              ],
+              "Rot": [
+                -90.0,
+                -90.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": true,
+            "OverridePhysics": true,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": false,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": true,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": -12.5,
+              "MaxRoll": 13.5,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 7.5,
+              "MinPitch": -13.0,
+              "MinRoll": 7.0,
+              "MinYaw": 7.5,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "PreferredItems": [],
+            "Priority": 0,
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用模型变换",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideMeshTransform": true,
+                "IndependentMeshTransform": {
+                  "Pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Pos": [
+                    0.0,
+                    -4.0,
+                    -4.0
+                  ],
+                  "Rot": [
+                    -90.0,
+                    -90.0,
+                    0.0
+                  ],
+                  "Scale": 1.0
+                }
+              }
+            ],
+            "TargetNode": "IAD_CME_BackPack",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "LLeg_Thigh": {
+            "AdvancedFilters": {
+              "AllowAmmo": false,
+              "AllowArmor": false,
+              "AllowFood": false,
+              "AllowGun": true,
+              "AllowKeys": false,
+              "AllowMedicine": false,
+              "AllowMelee": false,
+              "AllowOneHanded": false,
+              "AllowShield": false,
+              "AllowThrown": false,
+              "AllowTwoHanded": false,
+              "AllowWater": false,
+              "UseBaseFilters": false
+            },
+            "AllowedFormTypes": [],
+            "AlwaysUnload": true,
+            "AmmoRig": {
+              "Dir": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "DisplayMode": 0,
+              "Dynamic": true,
+              "IsDedicated": false,
+              "MaxMags": 3,
+              "Spacing": 5.0
+            },
+            "CheckCannotWear": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.350000023841858
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.350000023841858
+            },
+            "ItemFilter": {
+              "AllowList": [],
+              "DenyAll": false,
+              "DenyList": []
+            },
+            "KeepHolsterWhenDrawn": true,
+            "KeywordGroups": [
+              {
+                "GroupName": "新关键字组",
+                "IsAnd": false,
+                "Keywords": [
+                  "WeaponTypePistol"
+                ]
+              }
+            ],
+            "KeywordMode": 1,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                -2.0,
+                -2.5,
+                5.0
+              ],
+              "Rot": [
+                -90.0,
+                90.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                -2.0,
+                -2.5,
+                5.0
+              ],
+              "Rot": [
+                -90.0,
+                90.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": true,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "PreferredItems": [],
+            "Priority": 0,
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用模型变换",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideMeshTransform": true,
+                "IndependentMeshTransform": {
+                  "Pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Pos": [
+                    -2.0,
+                    -2.5,
+                    5.0
+                  ],
+                  "Rot": [
+                    -90.0,
+                    90.0,
+                    -90.0
+                  ],
+                  "Scale": 1.0
+                }
+              }
+            ],
+            "TargetNode": "IAD_CME_LLeg_Thigh",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                -5.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                90.5,
+                90.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                -5.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                90.5,
+                90.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "RLeg_Thigh": {
+            "AdvancedFilters": {
+              "AllowAmmo": false,
+              "AllowArmor": false,
+              "AllowFood": false,
+              "AllowGun": true,
+              "AllowKeys": false,
+              "AllowMedicine": false,
+              "AllowMelee": false,
+              "AllowOneHanded": false,
+              "AllowShield": false,
+              "AllowThrown": false,
+              "AllowTwoHanded": false,
+              "AllowWater": false,
+              "UseBaseFilters": false
+            },
+            "AllowedFormTypes": [],
+            "AlwaysUnload": true,
+            "AmmoRig": {
+              "Dir": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "DisplayMode": 0,
+              "Dynamic": true,
+              "IsDedicated": false,
+              "MaxMags": 3,
+              "Spacing": 5.0
+            },
+            "CheckCannotWear": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.350000023841858
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.350000023841858
+            },
+            "ItemFilter": {
+              "AllowList": [],
+              "DenyAll": false,
+              "DenyList": []
+            },
+            "KeepHolsterWhenDrawn": true,
+            "KeywordGroups": [
+              {
+                "GroupName": "新分组",
+                "IsAnd": false,
+                "Keywords": [
+                  "WeaponTypePistol"
+                ]
+              }
+            ],
+            "KeywordMode": 1,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                2.0,
+                -2.5,
+                6.0
+              ],
+              "Rot": [
+                -90.0,
+                -90.0,
+                90.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                2.0,
+                -2.5,
+                6.0
+              ],
+              "Rot": [
+                -90.0,
+                -90.0,
+                90.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": true,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": false,
+              "DrawConstraints": true,
+              "DrawPendulum": true,
+              "EnableAngularConstraint": true,
+              "EnableBoxConstraint": true,
+              "EnableSphereConstraint": true,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "PreferredItems": [],
+            "Priority": 1,
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用模型变换",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideMeshTransform": true,
+                "IndependentMeshTransform": {
+                  "Pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Pos": [
+                    2.0,
+                    -2.5,
+                    6.0
+                  ],
+                  "Rot": [
+                    -90.0,
+                    -90.0,
+                    90.0
+                  ],
+                  "Scale": 1.0
+                }
+              }
+            ],
+            "TargetNode": "IAD_CME_RLeg_Thigh",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                -5.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                90.0,
+                90.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                -5.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                90.0,
+                90.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "back": {
+            "AdvancedFilters": {
+              "AllowAmmo": false,
+              "AllowArmor": false,
+              "AllowFood": false,
+              "AllowGun": false,
+              "AllowKeys": false,
+              "AllowMedicine": false,
+              "AllowMelee": false,
+              "AllowOneHanded": false,
+              "AllowShield": false,
+              "AllowThrown": false,
+              "AllowTwoHanded": false,
+              "AllowWater": false,
+              "UseBaseFilters": false
+            },
+            "AllowedFormTypes": [],
+            "AlwaysUnload": true,
+            "AmmoRig": {
+              "Dir": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "DisplayMode": 0,
+              "Dynamic": true,
+              "IsDedicated": false,
+              "MaxMags": 3,
+              "Spacing": 5.0
+            },
+            "CheckCannotWear": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ItemFilter": {
+              "AllowList": [],
+              "DenyAll": false,
+              "DenyList": [
+                234883072
+              ]
+            },
+            "KeepHolsterWhenDrawn": true,
+            "KeywordGroups": [
+              {
+                "GroupName": "新关键字组",
+                "IsAnd": false,
+                "Keywords": [
+                  "WeaponTypeBallistic",
+                  "WeaponTypeLaser",
+                  "WeaponTypeRifle",
+                  "WeaponTypeShotgun",
+                  "WeaponTypeSniper",
+                  "WeaponTypeMelee2H"
+                ]
+              }
+            ],
+            "KeywordMode": 1,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                2.5,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                180.0,
+                90.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                2.5,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                180.0,
+                90.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": true,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": false,
+              "DrawConstraints": true,
+              "DrawPendulum": true,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": true,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "PreferredItems": [],
+            "Priority": 0,
+            "SelectionMode": 0,
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用模型变换",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideMeshTransform": true,
+                "IndependentMeshTransform": {
+                  "Pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Pos": [
+                    2.5,
+                    0.0,
+                    0.0
+                  ],
+                  "Rot": [
+                    180.0,
+                    90.0,
+                    -90.0
+                  ],
+                  "Scale": 1.0
+                }
+              }
+            ],
+            "TargetNode": "IAD_CME_Back",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                -5.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                -5.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "backpack": {
+            "AdvancedFilters": {
+              "AllowAmmo": false,
+              "AllowArmor": false,
+              "AllowFood": false,
+              "AllowGun": false,
+              "AllowKeys": false,
+              "AllowMedicine": false,
+              "AllowMelee": false,
+              "AllowOneHanded": false,
+              "AllowShield": false,
+              "AllowThrown": true,
+              "AllowTwoHanded": false,
+              "AllowWater": false,
+              "UseBaseFilters": false
+            },
+            "AllowedFormTypes": [],
+            "AlwaysUnload": true,
+            "AmmoRig": {
+              "Dir": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "DisplayMode": 0,
+              "Dynamic": true,
+              "IsDedicated": false,
+              "MaxMags": 3,
+              "Spacing": 5.0
+            },
+            "CheckCannotWear": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ItemFilter": {
+              "AllowList": [],
+              "DenyAll": false,
+              "DenyList": [
+                234883072
+              ]
+            },
+            "KeepHolsterWhenDrawn": true,
+            "KeywordGroups": [
+              {
+                "GroupName": "新关键字组",
+                "IsAnd": false,
+                "Keywords": [
+                  "WeaponTypeMelee2H"
+                ]
+              }
+            ],
+            "KeywordMode": 1,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                20.0
+              ],
+              "Rot": [
+                265.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                20.0
+              ],
+              "Rot": [
+                265.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": true,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "PreferredItems": [],
+            "Priority": 0,
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用模型变换",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideMeshTransform": true,
+                "IndependentMeshTransform": {
+                  "Pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Pos": [
+                    0.0,
+                    0.0,
+                    20.0
+                  ],
+                  "Rot": [
+                    265.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Scale": 1.0
+                }
+              }
+            ],
+            "TargetNode": "IAD_CME_BackPack",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "backpack_L": {
+            "AdvancedFilters": {
+              "AllowAmmo": false,
+              "AllowArmor": false,
+              "AllowFood": false,
+              "AllowGun": true,
+              "AllowKeys": false,
+              "AllowMedicine": false,
+              "AllowMelee": true,
+              "AllowOneHanded": false,
+              "AllowShield": false,
+              "AllowThrown": false,
+              "AllowTwoHanded": true,
+              "AllowWater": false,
+              "UseBaseFilters": false
+            },
+            "AllowedFormTypes": [],
+            "AlwaysUnload": true,
+            "AmmoRig": {
+              "Dir": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "DisplayMode": 0,
+              "Dynamic": true,
+              "IsDedicated": false,
+              "MaxMags": 3,
+              "Spacing": 5.0
+            },
+            "CheckCannotWear": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ItemFilter": {
+              "AllowList": [],
+              "DenyAll": false,
+              "DenyList": []
+            },
+            "KeepHolsterWhenDrawn": true,
+            "KeywordGroups": [
+              {
+                "GroupName": "新关键字组",
+                "IsAnd": false,
+                "Keywords": [
+                  "WeaponTypeBallistic",
+                  "WeaponTypeLaser",
+                  "WeaponTypeRifle",
+                  "WeaponTypeShotgun",
+                  "WeaponTypeSniper"
+                ]
+              }
+            ],
+            "KeywordMode": 1,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                -90.0,
+                90.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                -90.0,
+                90.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": true,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "PreferredItems": [],
+            "Priority": 0,
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用模型变换",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideMeshTransform": true,
+                "IndependentMeshTransform": {
+                  "Pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Pos": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Rot": [
+                    -90.0,
+                    90.0,
+                    -90.0
+                  ],
+                  "Scale": 1.0
+                }
+              }
+            ],
+            "TargetNode": "IAD_CME_BackPack_L",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                -5.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                -90.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                -5.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                -90.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            }
+          },
+          "backpack_R": {
+            "AdvancedFilters": {
+              "AllowAmmo": false,
+              "AllowArmor": false,
+              "AllowFood": false,
+              "AllowGun": true,
+              "AllowKeys": false,
+              "AllowMedicine": false,
+              "AllowMelee": true,
+              "AllowOneHanded": false,
+              "AllowShield": false,
+              "AllowThrown": false,
+              "AllowTwoHanded": true,
+              "AllowWater": false,
+              "UseBaseFilters": false
+            },
+            "AllowedFormTypes": [],
+            "AlwaysUnload": true,
+            "AmmoRig": {
+              "Dir": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "DisplayMode": 0,
+              "Dynamic": true,
+              "IsDedicated": false,
+              "MaxMags": 3,
+              "Spacing": 5.0
+            },
+            "CheckCannotWear": false,
+            "DisplayConditionTree": {
+              "Children": [],
+              "IsAnd": true,
+              "IsGroup": true,
+              "IsNot": false
+            },
+            "Enabled": true,
+            "ExtractMagazine": false,
+            "HolsterModelPath": "",
+            "Holster_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "Holster_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Scale": 1.0
+            },
+            "ItemFilter": {
+              "AllowList": [],
+              "DenyAll": false,
+              "DenyList": []
+            },
+            "KeepHolsterWhenDrawn": true,
+            "KeywordGroups": [
+              {
+                "GroupName": "新关键字组",
+                "IsAnd": false,
+                "Keywords": [
+                  "WeaponTypeBallistic",
+                  "WeaponTypeLaser",
+                  "WeaponTypeRifle",
+                  "WeaponTypeShotgun",
+                  "WeaponTypeSniper"
+                ]
+              }
+            ],
+            "KeywordMode": 1,
+            "Mesh_f": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                -90.0,
+                90.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            },
+            "Mesh_m": {
+              "Pivot": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                -90.0,
+                90.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            },
+            "OverrideMeshTransform": true,
+            "OverridePhysics": false,
+            "OverrideTransform": false,
+            "Physics": {
+              "BoxParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "CogOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Damping": 0.949999988079071,
+              "Disabled": true,
+              "DrawConstraints": false,
+              "DrawPendulum": false,
+              "EnableAngularConstraint": false,
+              "EnableBoxConstraint": false,
+              "EnableSphereConstraint": false,
+              "GravityBias": 1200.0,
+              "Linear": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Mass": 1.0,
+              "MaxOffsetBoxFriction": 0.02500000037252903,
+              "MaxOffsetN": [
+                -20.0,
+                -20.0,
+                -20.0
+              ],
+              "MaxOffsetP": [
+                20.0,
+                20.0,
+                20.0
+              ],
+              "MaxOffsetSphereFriction": 0.02500000037252903,
+              "MaxOffsetSphereOffset": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "MaxOffsetSphereRadius": 20.0,
+              "MaxPitch": 60.0,
+              "MaxRoll": 45.0,
+              "MaxVelocity": 20000.0,
+              "MaxYaw": 45.0,
+              "MinPitch": -15.0,
+              "MinRoll": -45.0,
+              "MinYaw": -45.0,
+              "Resistance": 0.0,
+              "Rotational": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "SphereParams": {
+                "PenBiasDepthLimit": 20000.0,
+                "PenBiasFactor": 1.0,
+                "RestitutionCoefficient": 0.0,
+                "VelocityResponseScale": 0.10000000149011612
+              },
+              "SpringSlackMag": 0.0,
+              "SpringSlackOffset": 0.0,
+              "Stiffness": 2.0,
+              "Stiffness2": 1.0,
+              "VisualProbeLength": 40.0
+            },
+            "PreferredItems": [],
+            "Priority": 0,
+            "StateMachine": [
+              {
+                "Description": "动力甲：专用模型变换",
+                "Condition": {
+                  "Children": [
+                    {
+                      "Expected": true,
+                      "IsAnd": true,
+                      "IsGroup": false,
+                      "IsNot": false,
+                      "Keyword": "",
+                      "Keyword2": "",
+                      "Type": "IsInPowerArmor"
+                    }
+                  ],
+                  "IsAnd": true,
+                  "IsGroup": true,
+                  "IsNot": false
+                },
+                "ContinueAfterMatch": false,
+                "OverrideMeshTransform": true,
+                "IndependentMeshTransform": {
+                  "Pivot": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Pos": [
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "Rot": [
+                    -90.0,
+                    90.0,
+                    -90.0
+                  ],
+                  "Scale": 1.0
+                }
+              }
+            ],
+            "TargetNode": "IAD_CME_BackPack_R",
+            "UseProjectileForAmmo": false,
+            "f": {
+              "Pivot": [
+                0.0,
+                -5.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                -90.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            },
+            "m": {
+              "Pivot": [
+                0.0,
+                -5.0,
+                0.0
+              ],
+              "Pos": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "Rot": [
+                0.0,
+                -90.0,
+                -90.0
+              ],
+              "Scale": 1.0
+            }
+          }
+        }
+      },
+      "NPC": {
+        "00000000": {}
+      },
+      "Race": {
+        "00000000": {}
+      }
+    },
+    "FormFilters": {
+      "My_Blacklist": {
+        "AllowList": [
+          483300
+        ],
+        "DenyAll": false,
+        "DenyList": []
+      }
+    }
+  },
+  "ProfileName": "DefaultConfig",
+  "Type": "IAD_DefaultConfig"
+}

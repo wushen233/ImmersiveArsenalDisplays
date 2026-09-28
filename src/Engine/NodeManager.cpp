@@ -69,6 +69,7 @@ namespace IAD
 	}
 
 	std::unordered_map<RE::TESFormID, NodeManager::ActorNodeCache> NodeManager::_nodeCache;
+	std::unordered_map<RE::TESFormID, std::uint64_t> NodeManager::_actor3DGenerations;
 	std::mutex NodeManager::_cacheMutex;
 	std::unordered_map<std::string, std::unordered_map<std::string, RE::NiMatrix3>> NodeManager::_pathBasedBoneDicts;
 	std::mutex NodeManager::_dictMutex;
@@ -103,6 +104,24 @@ namespace IAD
 	void NodeManager::ClearAllCaches() {
 		std::lock_guard<std::mutex> lock(_cacheMutex);
 		_nodeCache.clear();
+	}
+
+	void NodeManager::InvalidateForConfigRefresh() {
+		std::lock_guard<std::mutex> lock(_cacheMutex);
+		for (auto& [formID, cache] : _nodeCache) {
+			(void)formID;
+			// Configuration edits need the next evaluation to resolve new target
+			// bones and names, but they do not replace the actor scene graph.
+			cache.activeNodes.clear();
+			cache.hasInjectedMounts = false;
+		}
+	}
+
+	std::uint64_t NodeManager::GetActor3DGeneration(RE::TESFormID a_formID) {
+		if (a_formID == 0) return 0;
+		std::lock_guard<std::mutex> lock(_cacheMutex);
+		auto it = _actor3DGenerations.find(a_formID);
+		return it != _actor3DGenerations.end() ? it->second : 0;
 	}
 
 	void NodeManager::DetachAllManagedNodesForSceneTeardown() {
@@ -231,6 +250,7 @@ namespace IAD
 			if (stateChanged || cache.root3D != root) {
 				needsCleanup = true;
 				cache.root3D = root;
+				cache.actor3DGeneration = ++_actor3DGenerations[actorID];
 				RE::BSFixedString spineName("SPINE2");
 				cache.coreBone = static_cast<RE::NiNode*>(Safe_GetObjectByName(root, &spineName));
 				cache.hasInjectedMounts = false;

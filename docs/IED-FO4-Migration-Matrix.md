@@ -19,6 +19,13 @@ not an API compatibility claim.
 | Node overrides and attachment transforms | Implemented | FO4 actor skeleton nodes, named IAD intermediary nodes, transforms, physics, effect shaders, lights, model groups, and state overrides are supported. |
 | Skeleton matching and extra nodes | Implemented | IAD uses FO4 race/NPC/node/skeleton-path checks plus configured skeleton extensions. |
 | Runtime profile and preset editor | Implemented | Shared editor/profile data model with copy, apply, merge, metadata, and configuration snapshots. |
+| UI child-window shell and lifecycle | Implemented (first slice) | `UIWindowShell` owns registration, visibility predicates, open/close lifecycle dispatch, localized top-level titles, and open-window counting; existing detail windows retain their drawing and domain state. |
+| UI editor context and navigation state | Implemented (second slice) | `UIEditorContextStore` owns Slot/Node/Custom selection, inspector navigation, scope/query state, and transient edit flags; legacy `ImGuiManager::s_*State` names remain compatibility references while callers use context accessors. |
+| Actor display snapshot ownership | Implemented (third slice) | `ActorDisplayContext` owns the published UI snapshot; `HolsterManager` assembles one value and moves it across the Seam, with no duplicate `activeDebug*` buffers. |
+| Condition refresh policy ownership | Implemented (fourth slice) | `ConditionRefreshPolicy` owns cadence/history for active effects, named/legacy keybinds, quest stages, and conditional variables; `HolsterManager` consumes value results and requests actor refreshes. |
+| Runtime profile snapshot ownership | Implemented (fifth slice) | `GlobalProfileManager` publishes copied Transform, Physics, and valid FormFilter values through `ProfileRuntimeContext`; `HolsterManager` no longer accesses mutable profile records during evaluation. |
+| Coherent runtime configuration snapshot | Implemented (sixth slice) | `ConfigManager` resolves Slot, Node, and Custom scope data under one configuration lock and returns one `RuntimeConfigSnapshot` for each actor evaluation. |
+| Display clone lifecycle boundaries | Implemented (seventh slice) | `ActorDisplayLifecycle` owns replacement, culling, slot teardown, and deferred retirement for weapon, holster, and model-group arrays; old clones stay hidden through one shared grace window and dynamic array tails are culled when the active count shrinks. |
 | Background object cache | Deferred | FO4 weapon assembly depends on OMOD state and temporary references. Existing stable engine-owned clone handling takes priority over a cache rewrite. |
 | Object sounds | Deferred | IAD intentionally strips sound and collision extras from display clones to prevent furniture/Havok interaction. A safe opt-in sound system needs its own lifetime model. |
 | Outfit manager | Not portable | IED edits Skyrim outfits and equipment. IAD stays display-only and must not mutate FO4 NPC gameplay equipment or save state. |
@@ -27,6 +34,8 @@ not an API compatibility claim.
 
 ## Near-Term Order
 
-1. Finish regression coverage for dynamic profile references and profile lifecycle.
-2. Audit node and model lifecycle against stable engine-owned-clone rules before adding render features.
+1. Verify the audited node and model lifecycle in-game around the existing live-scene Fallout 4 runtime Adapter, including replacement, culling, retirement, and load/death/3D teardown.
+2. Continue splitting the remaining legacy `UIConfigWindows` profile/content paths while preserving the new runtime snapshot seams.
 3. Evaluate an optional FO4-safe display cache only after proving that assembled OMOD weapons remain isolated from inventory `ExtraDataList` instances.
+
+The dedicated detached preview scene/camera is deferred. The supported preview path remains the Fallout 4 live game scene through the live-camera Adapter; the detached implementation is retained as a separately gated future path.

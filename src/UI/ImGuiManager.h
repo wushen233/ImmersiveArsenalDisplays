@@ -4,6 +4,8 @@
 #include <backends/imgui_impl_dx11.h>
 #include "Data/ConfigManager.h" 
 #include "UIWindow.h"
+#include "UIWindowShell.h"
+#include "UIEditorContextStore.h"
 #include <vector>
 #include <memory>
 #include <string>
@@ -11,32 +13,18 @@
 #include <atomic>
 
 namespace IAD::UI {
-    enum class MeshEditMode { kWeapon = 0, kHolster = 1, kMagazine = 2, kModelGroup = 3 };
-
     class ImGuiManager {
     public:
         static ImGuiManager& GetSingleton() { static ImGuiManager instance; return instance; }
 
-        // 🌟 将 WindowState 放在这里，彻底杜绝找不到标识符的问题
-        struct WindowState {
-            bool isOpen = false;
-            uint32_t currentID = 0;
-            ConfigScope scope = ConfigScope::kGlobal;
-			bool scopeTabInitialized = false;
-            uint32_t id = 0;
-            int targetFilter = 0;
-            int genderEdit = 0;
-            bool syncGender = false;
-            MeshEditMode meshMode = MeshEditMode::kWeapon;
-        };
+        // Compatibility name for existing window implementations. Ownership
+        // lives in UIEditorContextStore, not in ImGuiManager.
+        using WindowState = UIEditorContext;
 
         // 🌟 跨文件共享的交互状态变量
-        static WindowState s_slotState;
-        static WindowState s_nodeState;
-        static WindowState s_customState;
-        static std::string s_selectedSlot;
-        static std::string s_selectedNode;
-        static std::string s_selectedCustom;
+        static WindowState& s_slotState;
+        static WindowState& s_nodeState;
+        static WindowState& s_customState;
         static bool s_activeUIIsRotation;
 
         using Present_t = HRESULT(WINAPI*)(IDXGISwapChain*, UINT, UINT);
@@ -48,6 +36,11 @@ namespace IAD::UI {
         void ToggleDisplay();
         void RenderCore(IDXGISwapChain* pSwapChain);
         bool IsVisible() const { return m_isVisible; }
+
+        // Window visibility is independent from the docked tab that currently
+        // has focus.  UI windows report focus here so reopening the menu can
+        // restore the page the user actually used.
+        void NotifyWindowFocused(int a_windowIndex, bool a_focused);
 
         static HRESULT WINAPI Present_Hook(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags);
         static HRESULT WINAPI Present1_Hook(IDXGISwapChain1* pSwapChain, UINT SyncInterval, UINT PresentFlags, const DXGI_PRESENT_PARAMETERS* pPresentParameters);
@@ -69,6 +62,8 @@ namespace IAD::UI {
 
         bool m_isInit = false;
         std::atomic_bool m_isVisible = false;
+        int m_lastFocusedWindowIndex = 1;
+        int m_pendingFocusWindowIndex = -1;
         ImFont* m_font = nullptr;
 
         static Present_t m_originalPresent;
@@ -88,6 +83,6 @@ namespace IAD::UI {
         void InitImGui(IDXGISwapChain* pSwapChain);
         void RefreshCursorClip();
 
-        std::vector<std::unique_ptr<UIWindow>> m_windows;
+        UIWindowShell m_windowShell;
     };
 }

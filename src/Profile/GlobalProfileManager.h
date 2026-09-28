@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Profile/ProfileManager.h"
+#include "System/ProfileRuntimeContext.h"
 
 namespace IAD::Profile
 {
@@ -22,6 +23,10 @@ namespace IAD::Profile
 
 		void LoadAll();
 		bool IsLoaded() const { return _loaded; }
+		void RefreshRuntimeSnapshot();
+		std::optional<TransformData> ResolveRuntimeTransform(const std::string& a_name) const;
+		std::optional<PhysicsValues> ResolveRuntimePhysics(const std::string& a_name) const;
+		std::optional<FormFilter> ResolveRuntimeFormFilter(const std::string& a_name) const;
 
 		SlotProfileManager& Slots() { return _slots; }
 		NodeProfileManager& Nodes() { return _nodes; }

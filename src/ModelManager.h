@@ -105,6 +105,10 @@ namespace IAD
 		void RequestMagazineModel(RE::Actor* a_actor, ActiveItem& a_weapon, std::function<void(RE::NiAVObject*)> a_callback);
 		void RequestMagazineModel(RE::Actor* a_actor, ActiveItem& a_weapon, const ModelCleanupPolicy& a_cleanupPolicy, std::function<void(RE::NiAVObject*)> a_callback);
 		void RequestMagazineModel(RE::Actor* a_actor, ActiveItem& a_weapon, const ModelCleanupPolicy& a_cleanupPolicy, bool a_loadFirstPersonModel, std::function<void(RE::NiAVObject*)> a_callback);
+		// Clone an existing scene subtree into an IAD-owned render-only object. The
+		// returned pointer is not attached to the actor scene and is released by the
+		// caller on the game thread after the renderer has stopped using it.
+		RE::NiPointer<RE::NiAVObject> CloneRenderOnly(RE::NiAVObject* a_source, const ModelCleanupPolicy& a_cleanupPolicy);
 
 		void SetModelAlpha(RE::NiAVObject* a_node, float a_alpha);
 		void SetModelGeometryHidden(RE::NiAVObject* a_node, bool a_hidden);

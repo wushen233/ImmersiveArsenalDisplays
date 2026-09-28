@@ -1,4 +1,5 @@
-﻿#include "pch.h"
+#include "pch.h"
+#include "UILocalization.h"
 #include "UILogWindow.h"
 
 namespace IAD::UI {
@@ -33,19 +34,19 @@ namespace IAD::UI {
         ImGui::SetNextWindowSize(ImVec2(700, 450), ImGuiCond_FirstUseEver);
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.05f, 0.05f, 0.05f, 0.95f)); // 给控制台一个深邃的极客黑
         
-        if (!ImGui::Begin("🖥️ 开发者控制台 (In-Game Log Console)", &m_show)) {
+        if (!ImGui::Begin(TextLiteral("🖥️ 开发者控制台 (In-Game Log Console)"), &m_show)) {
             ImGui::PopStyleColor();
             ImGui::End();
             return;
         }
 
-        if (ImGui::Button("清空 (Clear)")) Clear();
+        if (ImGui::Button(TextLiteral("清空 (Clear)"))) Clear();
         ImGui::SameLine();
-        bool copy = ImGui::Button("复制全部 (Copy)");
+        bool copy = ImGui::Button(TextLiteral("复制全部 (Copy)"));
         ImGui::SameLine();
-        ImGui::Checkbox("自动滚动 (Auto-scroll)", &AutoScroll);
+        ImGui::Checkbox(TextLiteral("自动滚动 (Auto-scroll)"), &AutoScroll);
         ImGui::SameLine();
-        Filter.Draw("搜索日志 (Filter)", -150.0f);
+        Filter.Draw(TextLiteral("搜索日志 (Filter)"), -150.0f);
         
         ImGui::Separator();
         

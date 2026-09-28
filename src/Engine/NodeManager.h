@@ -39,22 +39,26 @@ namespace IAD
 	class NodeManager
 	{
 	public:
-	struct ManagedNode {
-		// The actor skeleton owns attached IAD nodes. This cache only observes them;
-		// cache invalidation must not alter engine scene ownership.
-		RE::NiNode* node = nullptr;
-		RE::NiTransform orig;
-	};
+		struct ManagedNode {
+			// The actor skeleton owns attached IAD nodes. This cache only observes them;
+			// cache invalidation must not alter engine scene ownership.
+			RE::NiNode* node = nullptr;
+			RE::NiTransform orig;
+		};
 
 		struct ActorNodeCache {
 			RE::NiNode* root3D = nullptr;
 			RE::NiNode* coreBone = nullptr;
+			std::uint64_t actor3DGeneration = 0;
 			bool wasDead = false;
 			bool hasInjectedMounts = false;
 			std::unordered_map<std::string, ManagedNode> activeNodes;
 		};
 
 		static std::unordered_map<RE::TESFormID, ActorNodeCache> _nodeCache;
+		// Monotonic per-actor scene identity. It survives cache eviction so a
+		// replacement 3D tree cannot reuse the identity of a stale UI snapshot.
+		static std::unordered_map<RE::TESFormID, std::uint64_t> _actor3DGenerations;
 		static std::mutex _cacheMutex;
 		static std::unordered_map<std::string, std::unordered_map<std::string, RE::NiMatrix3>> _pathBasedBoneDicts;
 		static std::mutex _dictMutex;
@@ -69,6 +73,10 @@ namespace IAD
 		static void ClearCache(RE::TESFormID a_formID);
 		static void ForgetCache(RE::TESFormID a_formID);
 		static void ClearAllCaches();
+		// Rebuild configuration-owned CME/MOV bindings without making the current
+		// actor 3D tree look like a newly-created scene to the UI identity tracker.
+		static void InvalidateForConfigRefresh();
+		static std::uint64_t GetActor3DGeneration(RE::TESFormID a_formID);
 
 		static void EnsureBoneDictionaryForPath(const std::string& a_nifPath);
 		static bool Is3DSafeAndCacheReady(RE::Actor* a_actor, uint64_t a_currentTick);

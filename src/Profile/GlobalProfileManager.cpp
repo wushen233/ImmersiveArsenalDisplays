@@ -95,7 +95,23 @@ namespace IAD::Profile
 			[](const std::string& name, const FormFilter& data) {
 				ConfigManager::GetSingleton()->SaveFormFilterProfile(name, data);
 			})
-	{}
+	{
+		auto onChanged = [this]() {
+			if (_loaded) {
+				RefreshRuntimeSnapshot();
+			}
+		};
+		_slots.SetChangedCallback(onChanged);
+		_nodes.SetChangedCallback(onChanged);
+		_customs.SetChangedCallback(onChanged);
+		_modelGroups.SetChangedCallback(onChanged);
+		_nodeMonitors.SetChangedCallback(onChanged);
+		_conditionalVariables.SetChangedCallback(onChanged);
+		_conditions.SetChangedCallback(onChanged);
+		_transforms.SetChangedCallback(onChanged);
+		_physics.SetChangedCallback(onChanged);
+		_formFilters.SetChangedCallback(onChanged);
+	}
 
 	void GlobalProfileManager::LoadAll() {
 		_slots.Load();
@@ -109,5 +125,47 @@ namespace IAD::Profile
 		_physics.Load();
 		_formFilters.Load();
 		_loaded = true;
+		RefreshRuntimeSnapshot();
+	}
+
+	void GlobalProfileManager::RefreshRuntimeSnapshot()
+	{
+		ProfileRuntimeSnapshot snapshot;
+		for (const auto& [name, record] : _transforms.Data()) {
+			if (!name.empty()) {
+				snapshot.transforms.emplace(name, record.data);
+			}
+		}
+		for (const auto& [name, record] : _physics.Data()) {
+			if (!name.empty()) {
+				snapshot.physics.emplace(name, record.data);
+			}
+		}
+		for (const auto& [name, record] : _formFilters.Data()) {
+			if (!name.empty() && !record.parserErrors) {
+				snapshot.formFilters.emplace(name, record.data);
+			}
+		}
+		REX::INFO(
+			"[IAD Profile] runtime snapshot published: transforms={} physics={} formFilters={}",
+			snapshot.transforms.size(),
+			snapshot.physics.size(),
+			snapshot.formFilters.size());
+		ProfileRuntimeContext::GetSingleton().Publish(std::move(snapshot));
+	}
+
+	std::optional<TransformData> GlobalProfileManager::ResolveRuntimeTransform(const std::string& a_name) const
+	{
+		return _loaded ? ProfileRuntimeContext::GetSingleton().FindTransform(a_name) : std::nullopt;
+	}
+
+	std::optional<PhysicsValues> GlobalProfileManager::ResolveRuntimePhysics(const std::string& a_name) const
+	{
+		return _loaded ? ProfileRuntimeContext::GetSingleton().FindPhysics(a_name) : std::nullopt;
+	}
+
+	std::optional<FormFilter> GlobalProfileManager::ResolveRuntimeFormFilter(const std::string& a_name) const
+	{
+		return _loaded ? ProfileRuntimeContext::GetSingleton().FindFormFilter(a_name) : std::nullopt;
 	}
 }

@@ -12,6 +12,7 @@
 #include <RE/E/ENUM_FORM_ID.h>         
 #include <RE/S/SIT_SLEEP_STATE.h>      
 #include <RE/P/PlayerCharacter.h>
+#include <RE/P/PowerArmor.h>
 #include <RE/T/TESForm.h>
 #include <RE/T/TESBoundObject.h>
 #include <RE/T/TESObjectWEAP.h>
@@ -970,7 +971,16 @@ namespace IAD
 	}
 
 	bool ConditionEvaluator::IsInPowerArmor(RE::Actor* a_actor) {
-		return ActorHasKeyword(a_actor, "ArmorTypePower");
+		if (!a_actor) return false;
+		// ActorHasKeyword() inspects the actor base and can remain true/false
+		// across a power-armor race switch. Use the game helper for the live
+		// state so configuration state overrides follow the actual PA session.
+		__try {
+			return RE::PowerArmor::ActorInPowerArmor(*a_actor);
+		}
+		__except (1) {
+			return false;
+		}
 	}
 
 	bool ConditionEvaluator::IsInInterior(RE::Actor* a_actor) {

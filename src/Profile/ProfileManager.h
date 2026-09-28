@@ -58,12 +58,17 @@ namespace IAD::Profile
 		using storage_type = std::map<std::string, record_type>;
 		using LoadDataFn = std::function<bool(const std::string&, T&)>;
 		using SaveDataFn = std::function<void(const std::string&, const T&)>;
+		using ChangeFn = std::function<void()>;
 
 		ProfileManager(std::string a_folderName, LoadDataFn a_loadFn, SaveDataFn a_saveFn) :
 			_folderName(std::move(a_folderName)),
 			_loadFn(std::move(a_loadFn)),
 			_saveFn(std::move(a_saveFn))
 		{}
+
+		void SetChangedCallback(ChangeFn a_callback) {
+			_onChanged = std::move(a_callback);
+		}
 
 		bool Load() {
 			_lastError.clear();
@@ -84,6 +89,7 @@ namespace IAD::Profile
 				}
 			}
 			_initialized = true;
+			NotifyChanged();
 			return true;
 		}
 
@@ -93,6 +99,7 @@ namespace IAD::Profile
 				return false;
 			}
 			_data[a_name] = std::move(record);
+			NotifyChanged();
 			return true;
 		}
 
@@ -130,6 +137,7 @@ namespace IAD::Profile
 				}
 				it->second.modified = false;
 				it->second.path = GetProfilePath(a_name);
+				NotifyChanged();
 				return true;
 			}
 			catch (const std::exception& e) {
@@ -150,6 +158,7 @@ namespace IAD::Profile
 				return false;
 			}
 			_data.erase(it);
+			NotifyChanged();
 			return true;
 		}
 
@@ -176,6 +185,7 @@ namespace IAD::Profile
 			record.name = a_newName;
 			record.path = GetProfilePath(a_newName);
 			_data.emplace(a_newName, std::move(record));
+			NotifyChanged();
 			return true;
 		}
 
@@ -255,6 +265,12 @@ namespace IAD::Profile
 			return true;
 		}
 
+		void NotifyChanged() {
+			if (_onChanged) {
+				_onChanged();
+			}
+		}
+
 		std::filesystem::path GetRootPath() const {
 			const auto dir = ConfigManager::GetSingleton()->GetConfigDir();
 			return std::filesystem::path(dir.empty() ? "Data/F4SE/Plugins/ImmersiveArsenalDisplays" : dir) / "Profiles" / _folderName;
@@ -327,6 +343,7 @@ namespace IAD::Profile
 		std::string _folderName;
 		LoadDataFn _loadFn;
 		SaveDataFn _saveFn;
+		ChangeFn _onChanged;
 		storage_type _data;
 		std::string _lastError;
 		bool _initialized = false;

@@ -5,8 +5,15 @@ namespace IAD::UI {
     class UIWindow {
     public:
         virtual ~UIWindow() = default;
-        
-        // 纯虚函数，强制每个子窗口必须实现自己的 Draw() 绘制逻辑
+
+        // Lifecycle hooks mirror the IED UIContext boundary. Existing
+        // windows only need Draw(); future stateful windows can opt in without
+        // moving lifecycle policy back into ImGuiManager.
+        virtual void Initialize() {}
+        virtual void Reset() {}
+        virtual void OnOpen() {}
+        virtual void OnClose() {}
+
         virtual void Draw() = 0;
     };
 }

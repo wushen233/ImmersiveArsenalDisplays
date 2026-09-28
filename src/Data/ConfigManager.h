@@ -547,6 +547,16 @@ namespace IAD
 		std::uint32_t playerBlockModifier = 0;
 	};
 
+	// Runtime evaluation consumes one coherent copy of all scope-resolved
+	// configuration domains. The editor may mutate ConfigManager between frames,
+	// so the runtime adapter must not resolve Slot, Node, and Custom data in
+	// separate lock/read windows.
+	struct RuntimeConfigSnapshot {
+		std::vector<ScopedData<SlotDefinition>> scopedSlots;
+		std::vector<ScopedData<NodeDefinition>> scopedNodes;
+		std::vector<ScopedData<CustomDefinition>> scopedCustoms;
+	};
+
 	class ConfigManager
 	{
 	public:
@@ -583,6 +593,7 @@ namespace IAD
 		std::vector<ScopedData<CustomDefinition>> ResolveCustomsWithScope(RE::Actor* a_actor);
 		std::vector<ScopedData<SlotDefinition>> ResolveSlotsWithScope(RE::Actor* a_actor);
 		std::vector<ScopedData<NodeDefinition>> ResolveNodesWithScope(RE::Actor* a_actor);
+		RuntimeConfigSnapshot GetRuntimeConfigSnapshot(RE::Actor* a_actor);
 		RuntimeSettingsSnapshot GetRuntimeSettingsSnapshot() const;
 		InputSettingsSnapshot GetInputSettingsSnapshot() const;
 
@@ -661,6 +672,7 @@ namespace IAD
 		std::uint32_t playerBlockHotkey = 0;
 		std::uint32_t playerBlockModifier = 0;
 		int logLevel = 2;
+		std::string uiLanguage = "zh_CN";
 		void SetEditorHotkey(std::uint32_t a_key);
 		bool displayFavoritesOnly = true;
 		bool prioritizeEquippedCandidates = true;
@@ -711,6 +723,20 @@ namespace IAD
 		int uiProfileManagedCategory = 0;
 		int uiProfileRequestedTab = -1;
 		int  uiLastClosedWindow = 1; // 记忆最后关闭的是哪个窗口
+
+		struct UILayoutState {
+			float slotLeftPaneWidth = 240.0f;
+			float nodeLeftPaneWidth = 240.0f;
+			float customLeftPaneWidth = 240.0f;
+			float filterLeftPaneWidth = 240.0f;
+			float profileSlotLeftPaneWidth = 220.0f;
+			float profileNodeLeftPaneWidth = 220.0f;
+			float profileCustomLeftPaneWidth = 220.0f;
+			int slotInspectorTab = 0;
+			int nodeInspectorTab = 0;
+			int customPrimaryTab = 0;
+			int customInspectorSection = 0;
+		} uiLayout;
 		// 👆===================================================👆
 
 	private:

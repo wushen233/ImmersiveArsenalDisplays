@@ -16,3 +16,12 @@ dist/
 data/F4SE/Plugins/ImmersiveArsenalDisplays/
 data/F4SE/Plugins/ImmersiveArsenalDisplays.dll
 data/F4SE/Plugins/ImmersiveArsenalDisplays.pdb
+
+# The shipped default display rules are source-controlled. Runtime state and
+# generated binaries remain ignored above.
+!data/F4SE/
+!data/F4SE/Plugins/
+!data/F4SE/Plugins/ImmersiveArsenalDisplays/
+!data/F4SE/Plugins/ImmersiveArsenalDisplays/DefaultConfig.json
+!data/F4SE/Plugins/ImmersiveArsenalDisplays/Localization/
+!data/F4SE/Plugins/ImmersiveArsenalDisplays/Localization/*.json

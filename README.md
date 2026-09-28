@@ -41,6 +41,12 @@ The build copies the generated DLL and PDB to `data/F4SE/Plugins/`. The PDB is
 ignored by Git and is useful only for local debugging. The runtime release
 archive is maintained separately from this source repository.
 
+`data/F4SE/Plugins/ImmersiveArsenalDisplays/DefaultConfig.json` is the
+source-controlled first-launch display configuration. It includes separate
+power-armor node hosts and model transforms. `ActiveConfig.json` is generated
+and maintained by the running game and is intentionally not part of the source
+repository.
+
 For the recommended local workflow inside the Fallout 4 workspace, see
 `docs/Local-Development.md`. The workspace checkout keeps the public source in
 `open-source/`; generated DLLs, Papyrus output, runtime configuration, and MO2
@@ -60,6 +66,7 @@ deployment files stay outside this repository.
 - `docs/Third-Party-Notices.md`: third-party licenses and acknowledgements
 - `docs/FO4-IED-architecture.md`: architecture and behavior notes
 - `docs/Papyrus-API.md`: `IAD_Native` Papyrus interface
+- `docs/World-Preview-Editor-Implementation-Plan.md`: live preview editor design and verification checklist
 
 ## License
 

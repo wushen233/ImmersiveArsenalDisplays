@@ -2030,8 +2030,6 @@ namespace IAD {
 		std::vector<ScopedData<T>> result;
 		if (!a_actor) return result;
 
-		std::lock_guard<std::recursive_mutex> lock(ConfigManager::GetSingleton()->_configMutex);
-
 		uint32_t actorID = a_actor->GetFormID();
 		uint32_t npcID = a_actor->data.objectReference ? a_actor->data.objectReference->GetFormID() : 0;
 		uint32_t raceID = a_actor->race ? a_actor->race->GetFormID() : 0;
@@ -2091,15 +2089,27 @@ namespace IAD {
 	}
 
 	std::vector<ScopedData<CustomDefinition>> ConfigManager::ResolveCustomsWithScope(RE::Actor* a_actor) {
+		std::lock_guard<std::recursive_mutex> lock(_configMutex);
 		return ResolveConfigWithFallback(a_actor, _customs, [](const CustomDefinition& c) { return c.customName; });
 	}
 
 	std::vector<ScopedData<SlotDefinition>> ConfigManager::ResolveSlotsWithScope(RE::Actor* a_actor) {
+		std::lock_guard<std::recursive_mutex> lock(_configMutex);
 		return ResolveConfigWithFallback(a_actor, _slots, [](const SlotDefinition& s) { return s.slotName; });
 	}
 
 	std::vector<ScopedData<NodeDefinition>> ConfigManager::ResolveNodesWithScope(RE::Actor* a_actor) {
+		std::lock_guard<std::recursive_mutex> lock(_configMutex);
 		return ResolveConfigWithFallback(a_actor, _nodes, [](const NodeDefinition& n) { return n.nodeName; });
+	}
+
+	RuntimeConfigSnapshot ConfigManager::GetRuntimeConfigSnapshot(RE::Actor* a_actor) {
+		std::lock_guard<std::recursive_mutex> lock(_configMutex);
+		RuntimeConfigSnapshot snapshot;
+		snapshot.scopedSlots = ResolveConfigWithFallback(a_actor, _slots, [](const SlotDefinition& s) { return s.slotName; });
+		snapshot.scopedNodes = ResolveConfigWithFallback(a_actor, _nodes, [](const NodeDefinition& n) { return n.nodeName; });
+		snapshot.scopedCustoms = ResolveConfigWithFallback(a_actor, _customs, [](const CustomDefinition& c) { return c.customName; });
+		return snapshot;
 	}
 
 	void ConfigManager::ExportPreset(const std::string& a_presetName, uint32_t a_flags) {
@@ -2645,6 +2655,11 @@ namespace IAD {
 		displayFavoritesOnly = GetPrivateProfileIntA("General", "DisplayFavoritesOnly", 0, iniPath.c_str()) != 0;
 		logLevel = std::clamp(static_cast<int>(GetPrivateProfileIntA("Debug", "LogLevel", 2, iniPath.c_str())), 0, 6);
 		spdlog::default_logger()->set_level(static_cast<spdlog::level::level_enum>(logLevel));
+		char languageBuffer[64] = "zh_CN";
+		GetPrivateProfileStringA("Localization", "Language", "zh_CN", languageBuffer, static_cast<DWORD>(std::size(languageBuffer)), iniPath.c_str());
+		uiLanguage = languageBuffer;
+		if (uiLanguage == "0") uiLanguage = "zh_CN";
+		else if (uiLanguage == "1") uiLanguage = "en_US";
 
 		// 读取所有窗口的上次状态
 		uiShowSlots = GetPrivateProfileIntA("UIState", "ShowSlots", 1, iniPath.c_str()) != 0;
@@ -2667,6 +2682,26 @@ namespace IAD {
 		uiProfileManagedCategory = GetPrivateProfileIntA("UIState", "ProfileManagedCategory", 0, iniPath.c_str());
 		uiLastClosedWindow = GetPrivateProfileIntA("UIState", "LastClosedWindow", 1, iniPath.c_str());
 
+		auto readLayoutWidth = [&](const char* key, float fallback) {
+			const int value = GetPrivateProfileIntA("UILayout", key, static_cast<int>(fallback), iniPath.c_str());
+			return std::clamp(static_cast<float>(value), 120.0f, 2000.0f);
+		};
+		auto readLayoutTab = [&](const char* key, int fallback, int maxValue) {
+			const int value = GetPrivateProfileIntA("UILayout", key, fallback, iniPath.c_str());
+			return std::clamp(value, 0, maxValue);
+		};
+		uiLayout.slotLeftPaneWidth = readLayoutWidth("SlotLeftPaneWidth", uiLayout.slotLeftPaneWidth);
+		uiLayout.nodeLeftPaneWidth = readLayoutWidth("NodeLeftPaneWidth", uiLayout.nodeLeftPaneWidth);
+		uiLayout.customLeftPaneWidth = readLayoutWidth("CustomLeftPaneWidth", uiLayout.customLeftPaneWidth);
+		uiLayout.filterLeftPaneWidth = readLayoutWidth("FilterLeftPaneWidth", uiLayout.filterLeftPaneWidth);
+		uiLayout.profileSlotLeftPaneWidth = readLayoutWidth("ProfileSlotLeftPaneWidth", uiLayout.profileSlotLeftPaneWidth);
+		uiLayout.profileNodeLeftPaneWidth = readLayoutWidth("ProfileNodeLeftPaneWidth", uiLayout.profileNodeLeftPaneWidth);
+		uiLayout.profileCustomLeftPaneWidth = readLayoutWidth("ProfileCustomLeftPaneWidth", uiLayout.profileCustomLeftPaneWidth);
+		uiLayout.slotInspectorTab = readLayoutTab("SlotInspectorTab", uiLayout.slotInspectorTab, 5);
+		uiLayout.nodeInspectorTab = readLayoutTab("NodeInspectorTab", uiLayout.nodeInspectorTab, 4);
+		uiLayout.customPrimaryTab = readLayoutTab("CustomPrimaryTab", uiLayout.customPrimaryTab, 2);
+		uiLayout.customInspectorSection = readLayoutTab("CustomInspectorSection", uiLayout.customInspectorSection, 4);
+
 		REX::INFO("[IAD] INI 配置文件读取完毕。");
 	}
 
@@ -2682,6 +2717,7 @@ namespace IAD {
 		WritePrivateProfileStringA("General", "PlayerBlockToggleModifier", std::to_string(playerBlockModifier).c_str(), iniPath.c_str());
 		WritePrivateProfileStringA("General", "DisplayFavoritesOnly", std::to_string(displayFavoritesOnly ? 1 : 0).c_str(), iniPath.c_str());
 		WritePrivateProfileStringA("Debug", "LogLevel", std::to_string(logLevel).c_str(), iniPath.c_str());
+		WritePrivateProfileStringA("Localization", "Language", uiLanguage.c_str(), iniPath.c_str());
 
 		// 写入所有窗口的当前状态
 		WritePrivateProfileStringA("UIState", "ShowSlots", std::to_string(uiShowSlots ? 1 : 0).c_str(), iniPath.c_str());
@@ -2703,6 +2739,25 @@ namespace IAD {
 		WritePrivateProfileStringA("UIState", "ShowVisualizer", std::to_string(uiShowVisualizer ? 1 : 0).c_str(), iniPath.c_str());
 		WritePrivateProfileStringA("UIState", "ProfileManagedCategory", std::to_string(uiProfileManagedCategory).c_str(), iniPath.c_str());
 		WritePrivateProfileStringA("UIState", "LastClosedWindow", std::to_string(uiLastClosedWindow).c_str(), iniPath.c_str());
+
+		auto writeLayoutWidth = [&](const char* key, float value) {
+			const int rounded = std::clamp(static_cast<int>(value + 0.5f), 120, 2000);
+			WritePrivateProfileStringA("UILayout", key, std::to_string(rounded).c_str(), iniPath.c_str());
+		};
+		auto writeLayoutTab = [&](const char* key, int value, int maxValue) {
+			WritePrivateProfileStringA("UILayout", key, std::to_string(std::clamp(value, 0, maxValue)).c_str(), iniPath.c_str());
+		};
+		writeLayoutWidth("SlotLeftPaneWidth", uiLayout.slotLeftPaneWidth);
+		writeLayoutWidth("NodeLeftPaneWidth", uiLayout.nodeLeftPaneWidth);
+		writeLayoutWidth("CustomLeftPaneWidth", uiLayout.customLeftPaneWidth);
+		writeLayoutWidth("FilterLeftPaneWidth", uiLayout.filterLeftPaneWidth);
+		writeLayoutWidth("ProfileSlotLeftPaneWidth", uiLayout.profileSlotLeftPaneWidth);
+		writeLayoutWidth("ProfileNodeLeftPaneWidth", uiLayout.profileNodeLeftPaneWidth);
+		writeLayoutWidth("ProfileCustomLeftPaneWidth", uiLayout.profileCustomLeftPaneWidth);
+		writeLayoutTab("SlotInspectorTab", uiLayout.slotInspectorTab, 5);
+		writeLayoutTab("NodeInspectorTab", uiLayout.nodeInspectorTab, 4);
+		writeLayoutTab("CustomPrimaryTab", uiLayout.customPrimaryTab, 2);
+		writeLayoutTab("CustomInspectorSection", uiLayout.customInspectorSection, 4);
 	}
 	// 👆================================================================👆
 }

@@ -4,6 +4,8 @@
 #include "Data/ConfigManager.h"
 #include "ModelManager.h"
 #include "Engine/SimComponent.h"
+#include "System/ActorRefreshScheduler.h"
+#include "System/ConditionRefreshPolicy.h"
 #include <RE/A/ActorEquipManager.h>
 #include <RE/A/ActorEquipManagerEvent.h>
 #include <RE/T/TESContainerChangedEvent.h>
@@ -30,12 +32,28 @@ namespace IAD
 		std::string name;
 		DebugNodeType type;
 		RE::NiPoint3 axisX, axisY, axisZ;
+		// Snapshot the spaces needed by the world preview editor. Keeping these
+		// with the render snapshot avoids reading scene nodes from the UI thread.
+		RE::NiMatrix3 parentWorldRotate;
+		RE::NiMatrix3 localRotate;
+		RE::NiMatrix3 rootWorldRotate;
+		bool isAbsolute = false;
 	};
 
 	struct DebugBoundSphere {
-		RE::NiPoint3 worldCenter;
-		float worldRadius;
+		RE::NiPoint3 worldCenter{ 0.0f, 0.0f, 0.0f };
+		float worldRadius = 0.0f;
 		std::string meshName;
+		// Sampled world-space mesh vertices used by the world preview editor to
+		// draw and hit-test the actual weapon silhouette instead of a debug box.
+		// Shared ownership keeps render snapshots cheap to copy while the game
+		// thread publishes a replacement bound snapshot.
+		std::shared_ptr<std::vector<RE::NiPoint3>> worldVertices;
+		bool hasGeometryContour = false;
+		// The bound is a render-thread-safe snapshot, so retain the logical MOV
+		// slot that owns the scene model for hit testing and selection.
+		std::string slotName;
+		bool isHolster = false;
 	};
 
 	enum class ActiveAxis {
@@ -43,26 +61,6 @@ namespace IAD
 		kX,
 		kY,
 		kZ
-	};
-
-	enum class ControllerUpdateFlags : uint32_t {
-		kNone = 0,
-		kEvaluateEquip = 1 << 0,
-		kUpdateTransform = 1 << 1,
-		kAll = kEvaluateEquip | kUpdateTransform
-	};
-	inline ControllerUpdateFlags operator|(ControllerUpdateFlags a, ControllerUpdateFlags b) { return static_cast<ControllerUpdateFlags>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b)); }
-	inline ControllerUpdateFlags operator&(ControllerUpdateFlags a, ControllerUpdateFlags b) { return static_cast<ControllerUpdateFlags>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b)); }
-	inline ControllerUpdateFlags operator~(ControllerUpdateFlags a) { return static_cast<ControllerUpdateFlags>(~static_cast<uint32_t>(a)); }
-
-	struct ActorRefreshState {
-		uint32_t pendingFlags = 0;
-		uint64_t lastSeenTick = 0;
-		uint64_t lastEvaluationTick = 0;
-		uint64_t activeEffectSignature = 0;
-		bool evaluationQueued = false;
-		bool retired = false;
-		bool activeEffectSignatureInitialized = false;
 	};
 
 	struct NodeState {
@@ -92,6 +90,10 @@ namespace IAD
 		RE::TESBoundObject* lastItem = nullptr;
 
 		std::uint64_t currentUID = 0;
+		// Monotonic identity for the current display request. UID/signature identify
+		// the item, while this epoch also rejects an older request after a rapid
+		// switch back to the same item or a slot-policy change.
+		std::uint64_t displayRequestGeneration = 0;
 
 		bool isEquipped = false;
 		bool isSlotHidden = false;
@@ -107,6 +109,10 @@ namespace IAD
 		TransformData slotBaseTransform;
 		PhysicsValues activePhys;
 		bool hasActivePhys = false;
+		// World-preview editing temporarily owns the live base transform. This
+		// prevents the physics integrator from immediately replacing the value
+		// while the user is dragging a slot gizmo.
+		bool previewTransformActive = false;
 
 		TransformData meshTransform;
 		TransformData geometryTransform;
@@ -142,6 +148,11 @@ namespace IAD
 
 		bool useLocalAxesSpace = true;
 		bool activeUIIsRotation = false;
+		bool worldPreviewEdit = true;
+		bool worldPreviewAutoWindow = true;
+		// Opt-in while the detached Interface3D renderer is being validated on
+		// the selected Fallout 4 runtime. The live camera remains the default.
+		bool worldPreviewDetached = false;
 	};
 
 	class HolsterManager :
@@ -158,11 +169,9 @@ namespace IAD
 		std::unordered_map<RE::TESFormID, std::unordered_map<std::string, NodeState>> _actorNodeStates;
 		std::unordered_map<RE::TESFormID, std::unordered_map<std::string, HolsterSlot>> _actorDisplaySlots;
 
-		std::mutex debugBoxMutex;
-		std::vector<DebugBox> activeDebugBoxes;
-		std::vector<DebugNode> activeDebugNodes;
-		std::vector<DebugBoundSphere> activeDebugBoundSpheres;
-		std::vector<DebugBoundSphere> nativeDebugBoundSpheres;
+		// Protects the settings edited by ImGui while the game thread snapshots
+		// them for ActorDisplayContext publication.
+		std::mutex debugSettingsMutex;
 		DebugSettings debugSettings;
 		ActiveAxis activeUIItemAxis = ActiveAxis::kNone;
 
@@ -171,8 +180,12 @@ namespace IAD
 
 		void RequestEvaluate(RE::TESFormID a_formID);
 		void RequestTransformUpdate(RE::TESFormID a_formID);
+		// UI edits are published from the render thread and consumed/coalesced on
+		// the game thread before actor transforms are updated.
+		void RequestPreviewTransform(RE::TESFormID a_formID, const std::string& a_name, bool a_isMOV, const TransformData& a_transform);
+		void RequestPreviewTransformReset(RE::TESFormID a_formID);
 		void RequestEvaluateAll();
-		void ForceRefreshAll() { _needsRefresh = true; }
+		void ForceRefreshAll() { _refreshScheduler.RequestGlobalRefresh(); }
 		void SetNPCDisplaysEnabled(bool a_enabled);
 
 		void ClearActorSlots(RE::TESFormID a_formID, bool a_skipSceneDetach = false);
@@ -189,21 +202,27 @@ namespace IAD
 	private:
 		uint64_t _currentUpdateTick = 0;
 		uint64_t _lastLFSweepTime = 0;
-		uint64_t _lastKeyBindConfigScanTick = 0;
-		uint64_t _lastQuestConditionScanTick = 0;
-		std::vector<std::string> _activeKeyBindConditions;
-		std::unordered_map<std::string, bool> _keyBindStates;
-		std::unordered_map<RE::TESFormID, std::uint16_t> _questConditionStages;
-
-		std::unordered_map<RE::TESFormID, ActorRefreshState> _actorRefreshStates;
-		std::mutex _flagsMutex;
+		ActorRefreshScheduler _refreshScheduler;
+		ConditionRefreshPolicy _conditionRefreshPolicy;
 
 		std::atomic<bool> _isUpdatingLoop{ false }; // 防止 16ms 轮询积压洪水
 		std::mutex _evalMutex;
 
+		struct PendingPreviewTransform {
+			bool valid = false;
+			bool reset = false;
+			RE::TESFormID formID = 0;
+			bool isMOV = false;
+			std::string name;
+			TransformData transform;
+		};
+		std::mutex _previewTransformMutex;
+		PendingPreviewTransform _pendingPreviewTransform;
+
 		HolsterManager() = default;
 
 		void EvaluateActor(RE::Actor* a_actor);
+		void ProcessPreviewTransformRequest();
 		void UpdateActorTransforms(RE::Actor* a_actor, std::vector<DebugBox>& newBoxes, std::vector<DebugNode>& newNodes);
 		void CollectModelBoundSpheres(RE::Actor* a_actor, std::vector<DebugBoundSphere>& outSpheres);
 		void ClearActorSlots_Internal(RE::TESFormID a_formID, bool a_skipSceneDetach = false, bool a_forceSceneDetach = false) noexcept;
@@ -213,9 +232,6 @@ namespace IAD
 		void CompleteEvaluation(RE::TESFormID a_formID);
 		void RunLowFrequencyMaintenance(RE::TESFormID a_playerID);
 		void ClearActorHistory(RE::TESFormID a_formID);
-		std::atomic<bool> _needsRefresh{ false };
-		std::atomic<bool> _forceRefreshTaskQueued{ false };
-
 		void RecordRecentEquip(RE::TESFormID a_actorID, std::uint64_t a_itemUID);
 		bool IsRecentlyEquipped(RE::TESFormID a_actorID, std::uint64_t a_itemUID) const;
 		std::uint64_t GetRecentEquipScore(RE::TESFormID a_actorID, std::uint64_t a_itemUID) const;

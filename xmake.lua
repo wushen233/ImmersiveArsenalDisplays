@@ -15,7 +15,7 @@ set_languages("c++23")
 
 add_requires("simpleini v4.25")
 add_requires("nlohmann_json v3.12.0")
-add_requires("imgui v1.92.5-docking", { configs = { win32 = true, dx11 = true } })
+add_requires("imgui v1.92.8-docking", { configs = { win32 = true, dx11 = true } })
 add_requires("microsoft-detours 2023.6.8")
 
 target("ImmersiveArsenalDisplays")
