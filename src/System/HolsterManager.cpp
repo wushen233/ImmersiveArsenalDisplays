@@ -2898,10 +2898,8 @@
 				const bool modelRequestChanged = sState.lastModelRequestSignature != currentModelRequestSignature;
 				const bool holsterPathChanged = sState.lastHolsterPath != currentHolsterPath;
 				const bool modelGroupChanged = sState.lastModelGroupSignature != currentModelGroupSignature;
-				if (uidChanged || modelRequestChanged || holsterPathChanged || modelGroupChanged) {
-					++sState.displayRequestGeneration;
-				}
 				if (uidChanged || modelRequestChanged) {
+					++sState.modelRequestGeneration;
 					// Do not detach a just-rendered node in the same weapon-switch window.
 					// Motion Vector Fixes (and similar scene visitors) can still be walking
 					// the old subtree on a render job.  Cull it now so it cannot ghost, then
@@ -2912,11 +2910,13 @@
 				}
 
 				if (holsterPathChanged) {
+					++sState.holsterRequestGeneration;
 					ActorDisplayLifecycle::BeginHolsterReplacement(sState, _currentUpdateTick);
 					sState.lastHolsterPath = currentHolsterPath;
 				}
 
 				if (uidChanged || modelGroupChanged) {
+					++sState.modelGroupRequestGeneration;
 					ActorDisplayLifecycle::BeginModelGroupReplacement(sState, _currentUpdateTick);
 					sState.lastModelGroupSignature = currentModelGroupSignature;
 				}
@@ -2975,7 +2975,7 @@
 
 				for (size_t i = sState.currentModels.size(); i < (size_t)numToSpawn; ++i) {
 					sState.currentModels.push_back(nullptr);
-					auto callback = [actorID, exactSlotKey = sDef.slotName, cleanMovName = FormatMOVName(sDef.slotName), index = i, reqUID = newUID, reqGeneration = sState.displayRequestGeneration, reqModelSignature = currentModelRequestSignature, reqAnimation = effectiveAnimation, reqEffect = effectiveEffect, reqLight = effectiveLight, reqInvisible = effectiveInvisible, reqHideGeometry = effectiveHideGeometry, sceneGeneration = ModelManager::GetSceneGeneration()](RE::NiAVObject* loaded) {
+					auto callback = [actorID, exactSlotKey = sDef.slotName, cleanMovName = FormatMOVName(sDef.slotName), index = i, reqUID = newUID, reqGeneration = sState.modelRequestGeneration, reqModelSignature = currentModelRequestSignature, reqAnimation = effectiveAnimation, reqEffect = effectiveEffect, reqLight = effectiveLight, reqInvisible = effectiveInvisible, reqHideGeometry = effectiveHideGeometry, sceneGeneration = ModelManager::GetSceneGeneration()](RE::NiAVObject* loaded) {
 						if (!loaded) {
 							REX::WARN("[IAD 追踪] 模型回调收到 nullptr，停止无限重试。插槽: {}", exactSlotKey);
 							return;
@@ -2992,7 +2992,7 @@
 								if (it != hm->_actorDisplaySlots.end() && it->second.count(exactSlotKey)) {
 									auto& state = it->second[exactSlotKey];
 
-									if (state.displayRequestGeneration != reqGeneration) return;
+									if (state.modelRequestGeneration != reqGeneration) return;
 									if (state.currentUID != reqUID) return;
 									if (state.lastModelRequestSignature != reqModelSignature) return;
 
@@ -3061,7 +3061,7 @@
 				for (size_t i = sState.currentHolsters.size(); i < (size_t)numToSpawn; ++i) {
 					sState.currentHolsters.push_back(nullptr);
 					if (!currentHolsterPath.empty()) {
-						auto hCallback = [actorID, exactSlotKey = sDef.slotName, cleanMovName = FormatMOVName(sDef.slotName), index = i, reqPath = currentHolsterPath, reqUID = newUID, reqGeneration = sState.displayRequestGeneration, sceneGeneration = ModelManager::GetSceneGeneration()](RE::NiAVObject* loaded) {
+						auto hCallback = [actorID, exactSlotKey = sDef.slotName, cleanMovName = FormatMOVName(sDef.slotName), index = i, reqPath = currentHolsterPath, reqGeneration = sState.holsterRequestGeneration, sceneGeneration = ModelManager::GetSceneGeneration()](RE::NiAVObject* loaded) {
 							if (!loaded) {
 								REX::WARN("[IAD 追踪] 枪套回调收到 nullptr。插槽: {}", exactSlotKey);
 								return;
@@ -3078,8 +3078,7 @@
 								if (it != hm->_actorDisplaySlots.end() && it->second.count(exactSlotKey)) {
 									auto& state = it->second[exactSlotKey];
 
-									if (state.displayRequestGeneration != reqGeneration) return;
-									if (state.currentUID != reqUID) return;
+									if (state.holsterRequestGeneration != reqGeneration) return;
 									if (state.lastHolsterPath != reqPath) return;
 
 									if (index < state.currentHolsters.size()) {
@@ -3128,7 +3127,7 @@
 					groupCleanupPolicy.removeLights = !activeModelGroups[i].light.enabled;
 					groupCleanupPolicy.keepTorchFlame = activeModelGroups[i].keepTorchFlame;
 					const auto groupMovName = activeModelGroups[i].movName;
-					auto gCallback = [actorID, exactSlotKey = sDef.slotName, groupMovName, index = i, reqSignature = currentModelGroupSignature, reqUID = newUID, reqGeneration = sState.displayRequestGeneration, sceneGeneration = ModelManager::GetSceneGeneration()](RE::NiAVObject* loaded) {
+					auto gCallback = [actorID, exactSlotKey = sDef.slotName, groupMovName, index = i, reqSignature = currentModelGroupSignature, reqUID = newUID, reqGeneration = sState.modelGroupRequestGeneration, sceneGeneration = ModelManager::GetSceneGeneration()](RE::NiAVObject* loaded) {
 						if (!loaded) {
 							REX::WARN("[IAD 追踪] 模型组回调收到 nullptr。插槽: {}", exactSlotKey);
 							return;
@@ -3145,7 +3144,7 @@
 								if (it != hm->_actorDisplaySlots.end() && it->second.count(exactSlotKey)) {
 									auto& state = it->second[exactSlotKey];
 
-									if (state.displayRequestGeneration != reqGeneration) return;
+									if (state.modelGroupRequestGeneration != reqGeneration) return;
 									if (state.lastModelGroupSignature != reqSignature || state.currentUID != reqUID) return;
 
 									if (index < state.currentModelGroups.size() && index < state.modelGroupTransforms.size()) {

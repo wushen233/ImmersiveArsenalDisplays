@@ -90,10 +90,11 @@ namespace IAD
 		RE::TESBoundObject* lastItem = nullptr;
 
 		std::uint64_t currentUID = 0;
-		// Monotonic identity for the current display request. UID/signature identify
-		// the item, while this epoch also rejects an older request after a rapid
-		// switch back to the same item or a slot-policy change.
-		std::uint64_t displayRequestGeneration = 0;
+		// Separate epochs keep a change to one resource from invalidating unrelated
+		// in-flight model, holster, or model-group loads for the same slot.
+		std::uint64_t modelRequestGeneration = 0;
+		std::uint64_t holsterRequestGeneration = 0;
+		std::uint64_t modelGroupRequestGeneration = 0;
 
 		bool isEquipped = false;
 		bool isSlotHidden = false;

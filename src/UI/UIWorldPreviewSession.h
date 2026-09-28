@@ -95,6 +95,9 @@ namespace IAD::UI {
 		IPreviewSceneAdapter* m_adapter = nullptr;
 		std::mutex m_pendingMutex;
 		bool m_pendingCameraEnter = false;
+		// Protected by m_pendingMutex; keeps a rapid UI restart from racing the
+		// game-thread application of the previous session's restore.
+		bool m_restoreInProgress = false;
 		PendingTransform m_pending;
 		PendingRestore m_pendingRestore;
 	};

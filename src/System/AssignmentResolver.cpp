@@ -20,7 +20,8 @@ namespace IAD {
 
 		bool PassesCommonSlotEligibility(
 			const AssignmentResolver::SlotEligibilityContext& a_context,
-			ActiveItem* a_item)
+			ActiveItem* a_item,
+			bool a_preferredOnly)
 		{
 			if (!a_item || !a_item->object ||
 				(a_item->count == 0 && !a_context.slot.extractMagazine)) {
@@ -43,7 +44,7 @@ namespace IAD {
 				requireFavoriteOrEquipped = a_context.slot.displayFavoritesOnly;
 			}
 
-			if (!a_context.ignoreEquipmentEligibility && requireFavoriteOrEquipped &&
+			if (!a_preferredOnly && !a_context.ignoreEquipmentEligibility && requireFavoriteOrEquipped &&
 				!a_item->isEquipped && !a_item->isFavorited) {
 				return false;
 			}
@@ -56,7 +57,7 @@ namespace IAD {
 			ActiveItem* a_item,
 			bool a_preferredOnly)
 		{
-			if (!PassesCommonSlotEligibility(a_context, a_item)) {
+			if (!PassesCommonSlotEligibility(a_context, a_item, a_preferredOnly)) {
 				return false;
 			}
 
@@ -87,8 +88,8 @@ namespace IAD {
 			}
 
 			// Preferred items retain IED's explicit override semantics: they bypass
-			// category, keyword, and condition filtering, but still respect the
-			// form filter's deny policy and the common equipment checks above.
+			// category, keyword, condition, and favorite-only filtering, while still
+			// respecting deny rules, equipped-only selection, and cannot-wear checks.
 			if (a_preferredOnly || IsPreferredItemForSlot(a_context.slot, a_item)) {
 				return !effectiveFormFilter->denyAll &&
 					effectiveFormFilter->denyList.find(a_item->object->GetFormID()) == effectiveFormFilter->denyList.end();

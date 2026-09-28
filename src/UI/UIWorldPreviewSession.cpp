@@ -67,6 +67,13 @@ namespace IAD::UI {
 		}
 
 		if (!IsActive()) {
+			{
+				std::lock_guard<std::mutex> lock(m_pendingMutex);
+				if (m_pendingRestore.valid || m_restoreInProgress) {
+					SetStatus(TextLiteral("正在恢复上一次预览视角..."));
+					return;
+				}
+			}
 			if (PreviewScene::GetSingleton().IsDetachedRequested() &&
 				!PreviewScene::GetSingleton().GetDetached().IsReady()) {
 				SetStatus(TextLiteral("正在创建独立角色预览场景..."));
@@ -91,6 +98,14 @@ namespace IAD::UI {
 
 	bool UIWorldPreviewSession::Begin()
 	{
+		{
+			std::lock_guard<std::mutex> lock(m_pendingMutex);
+			if (m_pendingRestore.valid || m_restoreInProgress) {
+				SetStatus(TextLiteral("正在恢复上一次预览视角..."));
+				return false;
+			}
+		}
+
 		if (ModelManager::IsGameLoading() || ModelManager::IsMainMenuTransition()) {
 			SetStatus(TextLiteral("等待游戏场景完成加载后启动角色预览。"));
 			return false;
@@ -132,12 +147,7 @@ namespace IAD::UI {
 		m_active.store(true, std::memory_order_release);
 		{
 			std::lock_guard<std::mutex> lock(m_pendingMutex);
-			// A new session supersedes an unconsumed restore from the previous
-			// session. The snapshot is refreshed below before any new command is
-			// published.
 			m_pending.valid = false;
-			m_pendingRestore.valid = false;
-			m_pendingRestore.reason.clear();
 			m_pendingCameraEnter = true;
 		}
 		SetStatus(TextLiteral("实时角色预览已启动；右键旋转，中键平移，滚轮缩放。"));
@@ -266,6 +276,7 @@ namespace IAD::UI {
 			if (m_pendingRestore.valid) {
 				restore = std::move(m_pendingRestore);
 				m_pendingRestore = {};
+				m_restoreInProgress = true;
 			}
 			else if (m_pending.valid) {
 				transform = m_pending;
@@ -278,6 +289,8 @@ namespace IAD::UI {
 		}
 		if (restore.valid) {
 			ProcessPendingRestore(std::move(restore));
+			std::lock_guard<std::mutex> lock(m_pendingMutex);
+			m_restoreInProgress = false;
 		}
 		else if (transform.valid) {
 			ProcessPendingTransform(transform);
@@ -335,12 +348,19 @@ namespace IAD::UI {
 
 	void UIWorldPreviewSession::ProcessPendingRestore(PendingRestore a_restore)
 	{
-		if (!a_restore.valid || IsActive() || ModelManager::IsGameLoading() ||
-			ModelManager::IsMainMenuTransition() ||
+		if (!a_restore.valid || IsActive()) return;
+
+		// Camera ownership belongs to the adapter, not to the lifetime of a
+		// particular player 3D root. Always release an IAD-owned free camera before
+		// validating whether the saved player angle still belongs to this scene.
+		if (a_restore.restoreCamera && a_restore.adapter) {
+			a_restore.adapter->RestorePreview(true);
+		}
+		m_cameraOwned.store(false, std::memory_order_release);
+
+		if (ModelManager::IsGameLoading() || ModelManager::IsMainMenuTransition() ||
 			ModelManager::GetSceneGeneration() != a_restore.snapshot.sceneGeneration) {
-			if (a_restore.valid) {
-				REX::INFO("[IAD Preview] restore skipped after session/scene transition: {}", a_restore.reason);
-			}
+			REX::INFO("[IAD Preview] player angle restore skipped after scene transition: {}", a_restore.reason);
 			return;
 		}
 
@@ -354,13 +374,8 @@ namespace IAD::UI {
 		player->data.angle.x = a_restore.snapshot.angle.x;
 		player->data.angle.y = a_restore.snapshot.angle.y;
 		player->data.angle.z = a_restore.snapshot.angle.z;
-		if (a_restore.restoreCamera) {
-			if (a_restore.adapter) a_restore.adapter->RestorePreview(true);
-			m_cameraOwned.store(false, std::memory_order_release);
-			REX::INFO("[IAD Preview] camera preview exited");
-		}
 		HolsterManager::GetSingleton()->ForceRefreshAll();
-		REX::INFO("[IAD Preview] player transform restored after {}", a_restore.reason);
+		REX::INFO("[IAD Preview] player angle restored after {}", a_restore.reason);
 	}
 
 	void UIWorldPreviewSession::End(std::string_view a_reason)
