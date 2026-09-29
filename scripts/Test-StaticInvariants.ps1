@@ -150,7 +150,21 @@ Require ($holsterSource.Contains('cull(state.oldModels);')) 'Disabled NPC displa
 Require ($holsterSource.Contains('cull(state.oldHolsters);')) 'Disabled NPC displays do not cull deferred holsters.'
 Require ($holsterSource.Contains('cull(state.oldModelGroups);')) 'Disabled NPC displays do not cull deferred model groups.'
 Require ($holsterSource.Contains('if (!a_actor || a_actor->IsDead(false) || a_actor->IsDeleted() || a_actor->IsDisabled()) {')) 'Global actor refresh can revive retired dead or disabled actors.'
-Require ($holsterSource.Contains('if (nodeStatesIt == _actorNodeStates.end() && slotStatesIt == _actorDisplaySlots.end()) return;')) 'Transform pass creates empty actor state for actors without IAD data.'
+$actorRuntimeStruct = [regex]::Match($holsterHeaderSource, '(?s)struct\s+ActorDisplayRuntime\s*\{(?<body>.*?)\};')
+Require $actorRuntimeStruct.Success 'ActorDisplayRuntime is missing.'
+Require ([regex]::IsMatch($actorRuntimeStruct.Groups['body'].Value, 'unordered_map\s*<\s*std::string\s*,\s*NodeState\s*>\s*nodeStates\s*;')) 'ActorDisplayRuntime does not own nodeStates.'
+Require ([regex]::IsMatch($actorRuntimeStruct.Groups['body'].Value, 'unordered_map\s*<\s*std::string\s*,\s*HolsterSlot\s*>\s*displaySlots\s*;')) 'ActorDisplayRuntime does not own displaySlots.'
+Require ([regex]::IsMatch($holsterHeaderSource, 'unordered_map\s*<\s*RE::TESFormID\s*,\s*ActorDisplayRuntime\s*>\s*_actorDisplayRuntime\s*;')) 'HolsterManager does not own the actor runtime map.'
+Require ([regex]::Matches($holsterHeaderSource, '_actorDisplayRuntime').Count -eq 1) 'HolsterManager must declare exactly one actor runtime map.'
+Require (-not $holsterHeaderSource.Contains('_actorNodeStates') -and -not $holsterHeaderSource.Contains('_actorDisplaySlots')) 'HolsterManager header still declares a legacy actor map.'
+$buildActiveCppSource = Get-ChildItem (Join-Path $ProjectRoot 'src') -Recurse -File | Where-Object { $_.Extension -in @('.cpp', '.h', '.hpp') -and $_.FullName -notmatch '(?i)[\\/]Combat[\\/]' }
+$legacyActiveReferences = @()
+foreach ($sourceFile in $buildActiveCppSource) {
+    $sourceText = [System.IO.File]::ReadAllText($sourceFile.FullName)
+    if ($sourceText.Contains('_actorNodeStates') -or $sourceText.Contains('_actorDisplaySlots')) { $legacyActiveReferences += $sourceFile.FullName }
+}
+Require ($legacyActiveReferences.Count -eq 0) 'Build-active C++ source still references a legacy actor map.'
+Require ($holsterSource.Contains('if (actorRuntimeIt == _actorDisplayRuntime.end()) return;')) 'Transform pass does not use the actor runtime record as its state boundary.'
 Require ($holsterSource.Contains('std::unordered_set<RE::TESFormID> activeActorIDs;')) 'Active actor list is not deduplicated.'
 Require ($holsterSource.Contains('if (activeActorIDs.emplace(a_actor->GetFormID()).second)')) 'Active actor deduplication does not use FormID identity.'
 Require ($modelManagerHeaderSource.Contains('std::deque<AsyncModelRequest>')) 'Async model queue no longer supports latest-player request selection.'

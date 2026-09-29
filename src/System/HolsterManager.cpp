@@ -947,10 +947,11 @@
 		}
 
 		std::lock_guard<std::mutex> evalLock(_evalMutex);
-		auto slotsIt = _actorDisplaySlots.find(request.formID);
+		auto runtimeIt = _actorDisplayRuntime.find(request.formID);
+		auto slotsIt = runtimeIt == _actorDisplayRuntime.end() ? nullptr : &runtimeIt->second.displaySlots;
 		if (request.reset) {
-			if (slotsIt != _actorDisplaySlots.end()) {
-				for (auto& [slotName, state] : slotsIt->second) {
+			if (slotsIt != nullptr) {
+				for (auto& [slotName, state] : *slotsIt) {
 					state.previewTransformActive = false;
 					state.physicsSim.reset();
 				}
@@ -959,29 +960,29 @@
 		}
 
 		if (request.isMOV) {
-			if (slotsIt == _actorDisplaySlots.end()) {
+			if (slotsIt == nullptr) {
 				REX::WARN("[IAD Preview] MOV preview state is missing for actor {:08X}, name='{}'", request.formID, request.name);
 				return;
 			}
 
 			// Config slot keys and managed scene-node names are allowed to use
 			// different forms. The editor publishes the user-facing name, while
-			// _actorDisplaySlots is keyed by the exact JSON slot key. Resolve all
+			// ActorDisplayRuntime::displaySlots is keyed by the exact JSON slot key. Resolve all
 			// supported forms before giving up so a prefixed IAD_MOV_* slot still
 			// receives the live preview transform.
 			const std::string strippedName = StripManagedNodePrefix(request.name);
-			auto slotIt = slotsIt->second.find(request.name);
-			if (slotIt == slotsIt->second.end()) slotIt = slotsIt->second.find(strippedName);
-			if (slotIt == slotsIt->second.end()) slotIt = slotsIt->second.find(FormatMOVName(strippedName));
-			if (slotIt == slotsIt->second.end()) {
-				for (auto it = slotsIt->second.begin(); it != slotsIt->second.end(); ++it) {
+			auto slotIt = slotsIt->find(request.name);
+			if (slotIt == slotsIt->end()) slotIt = slotsIt->find(strippedName);
+			if (slotIt == slotsIt->end()) slotIt = slotsIt->find(FormatMOVName(strippedName));
+			if (slotIt == slotsIt->end()) {
+				for (auto it = slotsIt->begin(); it != slotsIt->end(); ++it) {
 					if (StripManagedNodePrefix(it->first) == strippedName) {
 						slotIt = it;
 						break;
 					}
 				}
 			}
-			if (slotIt == slotsIt->second.end()) {
+			if (slotIt == slotsIt->end()) {
 				REX::WARN("[IAD Preview] MOV preview target not found for actor {:08X}, name='{}', normalized='{}'", request.formID, request.name, strippedName);
 				return;
 			}
@@ -992,24 +993,24 @@
 			return;
 		}
 
-		auto nodesIt = _actorNodeStates.find(request.formID);
-		if (nodesIt == _actorNodeStates.end()) {
+		auto nodesIt = runtimeIt == _actorDisplayRuntime.end() ? nullptr : &runtimeIt->second.nodeStates;
+		if (nodesIt == nullptr) {
 			REX::WARN("[IAD Preview] CME preview state is missing for actor {:08X}, name='{}'", request.formID, request.name);
 			return;
 		}
 		const std::string strippedName = StripManagedNodePrefix(request.name);
-		auto nodeIt = nodesIt->second.find(request.name);
-		if (nodeIt == nodesIt->second.end()) nodeIt = nodesIt->second.find(strippedName);
-		if (nodeIt == nodesIt->second.end()) nodeIt = nodesIt->second.find(FormatCMEName(strippedName));
-		if (nodeIt == nodesIt->second.end()) {
-			for (auto it = nodesIt->second.begin(); it != nodesIt->second.end(); ++it) {
+		auto nodeIt = nodesIt->find(request.name);
+		if (nodeIt == nodesIt->end()) nodeIt = nodesIt->find(strippedName);
+		if (nodeIt == nodesIt->end()) nodeIt = nodesIt->find(FormatCMEName(strippedName));
+		if (nodeIt == nodesIt->end()) {
+			for (auto it = nodesIt->begin(); it != nodesIt->end(); ++it) {
 				if (StripManagedNodePrefix(it->first) == strippedName) {
 					nodeIt = it;
 					break;
 				}
 			}
 		}
-		if (nodeIt == nodesIt->second.end()) {
+		if (nodeIt == nodesIt->end()) {
 			REX::WARN("[IAD Preview] CME preview target not found for actor {:08X}, name='{}', normalized='{}'", request.formID, request.name, strippedName);
 			return;
 		}
@@ -1098,9 +1099,9 @@
 	}
 
 	void HolsterManager::ClearActorSlots_Internal(RE::TESFormID a_formID, bool a_skipSceneDetach, bool a_forceSceneDetach) noexcept {
-		auto it = _actorDisplaySlots.find(a_formID);
-		if (it != _actorDisplaySlots.end()) {
-			for (auto& [slotName, sState] : it->second) {
+		auto runtimeIt = _actorDisplayRuntime.find(a_formID);
+		if (runtimeIt != _actorDisplayRuntime.end()) {
+			for (auto& [slotName, sState] : runtimeIt->second.displaySlots) {
 				// 永远无条件执行安全释放，绝不制造野指针！
 				ActorDisplayLifecycle::ClearSlotModels(sState, a_skipSceneDetach, a_forceSceneDetach);
 
@@ -1128,11 +1129,7 @@
 				sState.modelGroupAnimationPlayed.clear();
 				sState.physicsSim.reset();
 			}
-			_actorDisplaySlots.erase(it);
-		}
-		auto nodeIt = _actorNodeStates.find(a_formID);
-		if (nodeIt != _actorNodeStates.end()) {
-			_actorNodeStates.erase(nodeIt);
+			_actorDisplayRuntime.erase(runtimeIt);
 		}
 	}
 
@@ -1142,9 +1139,9 @@
 		const auto playerID = player ? player->GetFormID() : 0;
 
 		if (!a_enabled) {
-			for (auto& [actorID, actorSlots] : _actorDisplaySlots) {
+			for (auto& [actorID, actorRuntime] : _actorDisplayRuntime) {
 				if (actorID == playerID) continue;
-				for (auto& [slotName, state] : actorSlots) {
+				for (auto& [slotName, state] : actorRuntime.displaySlots) {
 					auto cull = [](auto& models) {
 						for (auto& model : models) {
 							if (model) model->SetAppCulled(true);
@@ -1166,13 +1163,12 @@
 
 	void HolsterManager::ClearAllActorSlots(bool a_skipSceneDetach) {
 		std::lock_guard<std::mutex> evalLock(_evalMutex);
-		for (auto& [formID, actorSlots] : _actorDisplaySlots) {
-			for (auto& [slotName, sState] : actorSlots) {
+		for (auto& [formID, actorRuntime] : _actorDisplayRuntime) {
+			for (auto& [slotName, sState] : actorRuntime.displaySlots) {
 				ActorDisplayLifecycle::ClearSlotModels(sState, a_skipSceneDetach);
 			}
 		}
-		_actorDisplaySlots.clear();
-		_actorNodeStates.clear();
+		_actorDisplayRuntime.clear();
 		{
 			std::lock_guard<std::mutex> lock(_recentEquipMutex);
 			_recentEquippedItems.clear();
@@ -1203,14 +1199,13 @@
 
 	void HolsterManager::DetachAllActorSlotsForSceneTeardown() {
 		std::lock_guard<std::mutex> evalLock(_evalMutex);
-		std::size_t actorCount = _actorDisplaySlots.size();
-		for (auto& [formID, actorSlots] : _actorDisplaySlots) {
-			for (auto& [slotName, sState] : actorSlots) {
+		std::size_t actorCount = _actorDisplayRuntime.size();
+		for (auto& [formID, actorRuntime] : _actorDisplayRuntime) {
+			for (auto& [slotName, sState] : actorRuntime.displaySlots) {
 				ActorDisplayLifecycle::ClearSlotModels(sState, false, true);
 			}
 		}
-		_actorDisplaySlots.clear();
-		_actorNodeStates.clear();
+		_actorDisplayRuntime.clear();
 		{
 			std::lock_guard<std::mutex> lock(_recentEquipMutex);
 			_recentEquippedItems.clear();
@@ -1481,8 +1476,8 @@
 				//     bool hasIAD = false;
 				//     {
 				//         std::lock_guard<std::mutex> cacheLock(IAD::NodeManager::_cacheMutex);
-				//         auto slotIt = _actorDisplaySlots.find(actor->GetFormID());
-				//         hasIAD = (slotIt != _actorDisplaySlots.end());
+				//         auto slotIt = _actorDisplayRuntime.find(actor->GetFormID());
+				//         hasIAD = (slotIt != _actorDisplayRuntime.end());
 				//     }
 				//     IAD::Combat::OverrideWeaponBodyPart(actor, hasIAD);
 				// }
@@ -1611,14 +1606,14 @@
 		RE::TESFormID actorID = a_actor->GetFormID();
 		if (config->IsActorDisplayBlocked(a_actor)) {
 			ActorRuntimeContext::GetSingleton().Invalidate(actorID);
-			auto slotStatesIt = _actorDisplaySlots.find(actorID);
-			if (slotStatesIt != _actorDisplaySlots.end()) {
+			auto runtimeIt = _actorDisplayRuntime.find(actorID);
+			if (runtimeIt != _actorDisplayRuntime.end()) {
 				auto cull = [](auto& models) {
 					for (auto& model : models) {
 						if (model) model->SetAppCulled(true);
 					}
 				};
-				for (auto& [slotName, state] : slotStatesIt->second) {
+				for (auto& [slotName, state] : runtimeIt->second.displaySlots) {
 					cull(state.currentModels);
 					cull(state.currentHolsters);
 					cull(state.currentModelGroups);
@@ -1630,8 +1625,9 @@
 			}
 			return;
 		}
-		auto& nodeStates = _actorNodeStates[actorID];
-		auto& sStates = _actorDisplaySlots[actorID];
+		auto& actorRuntime = _actorDisplayRuntime[actorID];
+		auto& nodeStates = actorRuntime.nodeStates;
+		auto& sStates = actorRuntime.displaySlots;
 
 		bool isPlayer = a_actor->IsPlayerRef();
 		if (!isPlayer && !runtimeSettings.enableNPCDisplays) {
@@ -2988,9 +2984,8 @@
 							if (ModelManager::GetSceneGeneration() != sceneGeneration || ModelManager::IsGameLoading() || ModelManager::IsMainMenuTransition()) return;
 							auto hm = HolsterManager::GetSingleton();
 							std::lock_guard<std::mutex> evalLock(hm->_evalMutex);
-							auto it = hm->_actorDisplaySlots.find(actorID);
-								if (it != hm->_actorDisplaySlots.end() && it->second.count(exactSlotKey)) {
-									auto& state = it->second[exactSlotKey];
+							if (auto runtimeIt = hm->_actorDisplayRuntime.find(actorID); runtimeIt != hm->_actorDisplayRuntime.end() && runtimeIt->second.displaySlots.find(exactSlotKey) != runtimeIt->second.displaySlots.end()) {
+								auto& state = runtimeIt->second.displaySlots.find(exactSlotKey)->second;
 
 									if (state.modelRequestGeneration != reqGeneration) return;
 									if (state.currentUID != reqUID) return;
@@ -3074,9 +3069,8 @@
 								if (ModelManager::GetSceneGeneration() != sceneGeneration || ModelManager::IsGameLoading() || ModelManager::IsMainMenuTransition()) return;
 								auto hm = HolsterManager::GetSingleton();
 								std::lock_guard<std::mutex> evalLock(hm->_evalMutex);
-								auto it = hm->_actorDisplaySlots.find(actorID);
-								if (it != hm->_actorDisplaySlots.end() && it->second.count(exactSlotKey)) {
-									auto& state = it->second[exactSlotKey];
+								if (auto runtimeIt = hm->_actorDisplayRuntime.find(actorID); runtimeIt != hm->_actorDisplayRuntime.end() && runtimeIt->second.displaySlots.find(exactSlotKey) != runtimeIt->second.displaySlots.end()) {
+									auto& state = runtimeIt->second.displaySlots.find(exactSlotKey)->second;
 
 									if (state.holsterRequestGeneration != reqGeneration) return;
 									if (state.lastHolsterPath != reqPath) return;
@@ -3140,9 +3134,8 @@
 							if (ModelManager::GetSceneGeneration() != sceneGeneration || ModelManager::IsGameLoading() || ModelManager::IsMainMenuTransition()) return;
 							auto hm = HolsterManager::GetSingleton();
 								std::lock_guard<std::mutex> evalLock(hm->_evalMutex);
-								auto it = hm->_actorDisplaySlots.find(actorID);
-								if (it != hm->_actorDisplaySlots.end() && it->second.count(exactSlotKey)) {
-									auto& state = it->second[exactSlotKey];
+								if (auto runtimeIt = hm->_actorDisplayRuntime.find(actorID); runtimeIt != hm->_actorDisplayRuntime.end() && runtimeIt->second.displaySlots.find(exactSlotKey) != runtimeIt->second.displaySlots.end()) {
+									auto& state = runtimeIt->second.displaySlots.find(exactSlotKey)->second;
 
 									if (state.modelGroupRequestGeneration != reqGeneration) return;
 									if (state.lastModelGroupSignature != reqSignature || state.currentUID != reqUID) return;
@@ -3345,8 +3338,9 @@
 	{
 		if (!a_actor) return;
 		std::lock_guard<std::mutex> evalLock(_evalMutex);
-		auto slotsIt = _actorDisplaySlots.find(a_actor->GetFormID());
-		if (slotsIt == _actorDisplaySlots.end()) return;
+		auto runtimeIt = _actorDisplayRuntime.find(a_actor->GetFormID());
+		if (runtimeIt == _actorDisplayRuntime.end()) return;
+		auto& slots = runtimeIt->second.displaySlots;
 
 		// This is intentionally a read-only scene snapshot. Calling
 		// UpdateWorldBound() here can mutate the scene graph while the UI is
@@ -3449,7 +3443,7 @@
 			}
 		};
 
-		for (const auto& [slotName, state] : slotsIt->second) {
+		for (const auto& [slotName, state] : slots) {
 			for (const auto& model : state.currentModels) appendModel(model.get(), slotName, false);
 			for (const auto& model : state.currentHolsters) appendModel(model.get(), slotName, true);
 			for (const auto& model : state.currentModelGroups) appendModel(model.get(), slotName, false);
@@ -3466,9 +3460,10 @@
 		}
 
 		RE::TESFormID actorID = a_actor->GetFormID();
-		auto nodeStatesIt = _actorNodeStates.find(actorID);
-		auto slotStatesIt = _actorDisplaySlots.find(actorID);
-		if (nodeStatesIt == _actorNodeStates.end() && slotStatesIt == _actorDisplaySlots.end()) return;
+		auto actorRuntimeIt = _actorDisplayRuntime.find(actorID);
+		if (actorRuntimeIt == _actorDisplayRuntime.end()) return;
+		auto& nodeStates = actorRuntimeIt->second.nodeStates;
+		auto& sStates = actorRuntimeIt->second.displaySlots;
 		uint64_t nowTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 
 		auto actor3D = a_actor->Get3D(false);
@@ -3481,19 +3476,15 @@
 			(!a_actor->IsPlayerRef() && !runtimeSettings.enableNPCDisplays) ||
 			config->IsActorDisplayBlocked(a_actor);
 
-		if (nodeStatesIt != _actorNodeStates.end()) {
-			for (auto& [name, nState] : nodeStatesIt->second) {
-				auto cmeManaged = NodeManager::GetManagedNode(a_actor, FormatCMEName(name));
-				if (cmeManaged && cmeManaged->node) {
-					auto* cmeNode = cmeManaged->node;
-					TransformMath::ApplyAdvancedTransform(a_actor, cmeNode, cmeManaged->orig, nState.finalTransform, nState.isAbsolute);
-					RE::NiUpdateData ctxForce; ctxForce.flags = 0x1;
-					cmeNode->UpdateTransforms(ctxForce);
-				}
+		for (auto& [name, nState] : nodeStates) {
+			auto cmeManaged = NodeManager::GetManagedNode(a_actor, FormatCMEName(name));
+			if (cmeManaged && cmeManaged->node) {
+				auto* cmeNode = cmeManaged->node;
+				TransformMath::ApplyAdvancedTransform(a_actor, cmeNode, cmeManaged->orig, nState.finalTransform, nState.isAbsolute);
+				RE::NiUpdateData ctxForce; ctxForce.flags = 0x1;
+				cmeNode->UpdateTransforms(ctxForce);
 			}
 		}
-		if (slotStatesIt == _actorDisplaySlots.end()) return;
-		auto& sStates = slotStatesIt->second;
 
 		for (auto& [slotName, sState] : sStates) {
 			if ((sState.currentModels.empty() && sState.currentHolsters.empty() && sState.currentModelGroups.empty() &&
@@ -3517,16 +3508,16 @@
 			if (sState.hasActivePhys) {
 				activePhysPtr = &sState.activePhys;
 			}
-			else if (nodeStatesIt != _actorNodeStates.end()) {
-				auto nodeStateIt = nodeStatesIt->second.find(rawNodeName);
-				if (nodeStateIt != nodeStatesIt->second.end()) {
+			else if (!nodeStates.empty()) {
+				auto nodeStateIt = nodeStates.find(rawNodeName);
+				if (nodeStateIt != nodeStates.end()) {
 					activePhysPtr = &nodeStateIt->second.activePhys;
 				}
 				else {
 					std::string stripped = rawNodeName;
 					if (stripped.find("IAD_CME_") == 0) stripped = stripped.substr(8);
-					nodeStateIt = nodeStatesIt->second.find(stripped);
-					if (nodeStateIt != nodeStatesIt->second.end()) activePhysPtr = &nodeStateIt->second.activePhys;
+					nodeStateIt = nodeStates.find(stripped);
+					if (nodeStateIt != nodeStates.end()) activePhysPtr = &nodeStateIt->second.activePhys;
 				}
 			}
 
@@ -3709,10 +3700,10 @@
 							dn.axisX = { R.entry[0][0], R.entry[0][1], R.entry[0][2] };
 							dn.axisY = { R.entry[1][0], R.entry[1][1], R.entry[1][2] };
 							dn.axisZ = { R.entry[2][0], R.entry[2][1], R.entry[2][2] };
-							if (nType == DebugNodeType::kCME && nodeStatesIt != _actorNodeStates.end()) {
-								auto nodeStateIt = nodeStatesIt->second.find(StripManagedNodePrefix(nodeName));
-								if (nodeStateIt == nodeStatesIt->second.end()) nodeStateIt = nodeStatesIt->second.find(nodeName);
-								if (nodeStateIt != nodeStatesIt->second.end()) dn.isAbsolute = nodeStateIt->second.isAbsolute;
+							if (nType == DebugNodeType::kCME && !nodeStates.empty()) {
+								auto nodeStateIt = nodeStates.find(StripManagedNodePrefix(nodeName));
+								if (nodeStateIt == nodeStates.end()) nodeStateIt = nodeStates.find(nodeName);
+								if (nodeStateIt != nodeStates.end()) dn.isAbsolute = nodeStateIt->second.isAbsolute;
 							}
 							newNodes.push_back(dn);
 						}

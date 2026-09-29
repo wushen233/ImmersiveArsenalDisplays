@@ -142,6 +142,11 @@ namespace IAD
 		float arraySpacing = 0.0f;
 	};
 
+	struct ActorDisplayRuntime {
+		std::unordered_map<std::string, NodeState> nodeStates;
+		std::unordered_map<std::string, HolsterSlot> displaySlots;
+	};
+
 	struct DebugSettings {
 		bool showVanilla = false;  bool showVanillaNames = false;  bool showVanillaAxes = false;
 		bool showCME = false;      bool showCMENames = true;       bool showCMEAaxes = true;
@@ -167,8 +172,7 @@ namespace IAD
 			return &singleton;
 		}
 
-		std::unordered_map<RE::TESFormID, std::unordered_map<std::string, NodeState>> _actorNodeStates;
-		std::unordered_map<RE::TESFormID, std::unordered_map<std::string, HolsterSlot>> _actorDisplaySlots;
+		std::unordered_map<RE::TESFormID, ActorDisplayRuntime> _actorDisplayRuntime;
 
 		// Protects the settings edited by ImGui while the game thread snapshots
 		// them for ActorDisplayContext publication.
