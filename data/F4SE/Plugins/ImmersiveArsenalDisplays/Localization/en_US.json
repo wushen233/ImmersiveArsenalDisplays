@@ -450,6 +450,7 @@
     "literal.取消当前拖动##worldPreviewCancel": "CancelCurrentDrag##worldPreviewCancel",
     "literal.编辑事务：当前没有进行中的拖动": "Edit transaction: no drag in progress",
     "literal.正在创建独立角色预览场景...": "Creating standalone character preview scene...",
+    "literal.正在恢复上一次预览视角...": "Restoring the previous preview viewpoint...",
     "literal.预览场景适配器已切换": "Preview scene adapter switched",
     "literal.等待游戏场景完成加载后启动角色预览。": "Waiting for the game scene to finish loading before starting the character preview.",
     "literal.当前没有可用的玩家角色场景。": "No player character scene is available.",
