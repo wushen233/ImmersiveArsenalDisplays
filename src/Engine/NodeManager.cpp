@@ -272,17 +272,17 @@ namespace IAD
 		return ready;
 	}
 
-	NodeManager::ManagedNode* NodeManager::GetManagedNode(RE::Actor* a_actor, const std::string& a_name) {
-		if (!a_actor) return nullptr;
+	std::optional<NodeManager::ManagedNode> NodeManager::GetManagedNode(RE::Actor* a_actor, const std::string& a_name) {
+		if (!a_actor) return std::nullopt;
 		std::lock_guard<std::mutex> lock(_cacheMutex);
 		auto it = _nodeCache.find(a_actor->GetFormID());
 		if (it != _nodeCache.end()) {
 			auto nodeIt = it->second.activeNodes.find(a_name);
 			if (nodeIt != it->second.activeNodes.end() && nodeIt->second.node) {
-				return &nodeIt->second;
+				return nodeIt->second;
 			}
 		}
-		return nullptr;
+		return std::nullopt;
 	}
 
 	namespace TransformMath {
