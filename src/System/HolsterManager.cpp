@@ -3070,7 +3070,7 @@
 
 							auto task = F4SE::GetTaskInterface();
 							if (task) {
-								task->AddTask([actorID, exactSlotKey, cleanMovName, index, safeLoaded, reqPath, reqUID, reqGeneration, sceneGeneration]() {
+								task->AddTask([actorID, exactSlotKey, cleanMovName, index, safeLoaded, reqPath, reqGeneration, sceneGeneration]() {
 								if (ModelManager::GetSceneGeneration() != sceneGeneration || ModelManager::IsGameLoading() || ModelManager::IsMainMenuTransition()) return;
 								auto hm = HolsterManager::GetSingleton();
 								std::lock_guard<std::mutex> evalLock(hm->_evalMutex);

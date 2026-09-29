@@ -47,10 +47,10 @@ power-armor node hosts and model transforms. `ActiveConfig.json` is generated
 and maintained by the running game and is intentionally not part of the source
 repository.
 
-For the recommended local workflow inside the Fallout 4 workspace, see
-`docs/Local-Development.md`. The workspace checkout keeps the public source in
-`open-source/`; generated DLLs, Papyrus output, runtime configuration, and MO2
-deployment files stay outside this repository.
+Maintainer development uses a workspace-owned canonical project, while this
+repository is the public publication repository. A standalone clone remains
+buildable; generated binaries and runtime state are not source-controlled. For
+the maintainer publication workflow, see docs/Local-Development.md.
 
 ## Runtime Requirements
 

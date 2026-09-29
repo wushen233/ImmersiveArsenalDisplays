@@ -3,6 +3,8 @@
 )
 
 $ErrorActionPreference = 'Stop'
+# Project text is UTF-8; PS 5.1 otherwise decodes BOM-less files as ANSI.
+$PSDefaultParameterValues['Get-Content:Encoding'] = 'UTF8'
 
 function Require([bool]$Condition, [string]$Message) {
     if (-not $Condition) {
