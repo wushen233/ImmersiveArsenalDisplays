@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <mutex>
+#include <optional>
 // 👇========== 🌟 只更新头文件路径 ==========👇
 #include <RE/N/NiPointer.h>
 #include <RE/N/NiTransform.h>
@@ -81,7 +82,8 @@ namespace IAD
 		static void EnsureBoneDictionaryForPath(const std::string& a_nifPath);
 		static bool Is3DSafeAndCacheReady(RE::Actor* a_actor, uint64_t a_currentTick);
 
-		static ManagedNode* GetManagedNode(RE::Actor* a_actor, const std::string& a_name);
+		// Returns cache metadata by value; callers do not retain activeNodes storage after the cache lock is released.
+		static std::optional<ManagedNode> GetManagedNode(RE::Actor* a_actor, const std::string& a_name);
 		static bool Safe_AttachNode(RE::NiNode* a_parent, RE::NiAVObject* a_child);
 	};
 }

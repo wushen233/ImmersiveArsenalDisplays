@@ -163,6 +163,8 @@ Require ($modelManagerSource.Contains('g_sceneGeneration.fetch_add(1, std::memor
 Require ($nodeManagerSource.Contains('if (stateChanged || cache.root3D != root)')) 'Actor 3D-root replacement is no longer detected.'
 Require ($nodeManagerSource.Contains('HolsterManager::GetSingleton()->ClearActorSlots(actorID, true);')) '3D-root replacement no longer clears actor display state without a scene detach.'
 Require ($nodeManagerSource.Contains('HolsterManager::GetSingleton()->RequestEvaluate(actorID);')) '3D-root replacement does not queue actor display reconstruction.'
+Require ([regex]::IsMatch($nodeManagerHeaderSource, 'std::optional\s*<\s*ManagedNode\s*>\s+GetManagedNode\s*\(')) 'GetManagedNode does not expose a ManagedNode snapshot.'
+Require (-not [regex]::IsMatch($nodeManagerHeaderSource, '\bManagedNode\s*\*\s*GetManagedNode\s*\(')) 'GetManagedNode exposes a pointer to cache-owned storage.'
 Require ($configSource.Contains('j.value("UseProfile", false)')) 'Form filter profile references are no longer deserialized.'
 Require ($configSource.Contains('j["ProfileName"] = f.profileName;')) 'Form filter profile references are no longer serialized.'
 Require ($holsterSource.Contains('ResolveSlotFormFilter')) 'Slot evaluation no longer resolves form filter profile references.'
